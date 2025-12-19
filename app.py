@@ -268,6 +268,24 @@ if st.sidebar.button("Predict") and uploaded_file is not None:
         st.write(desc_subset.shape)
 
 # =========================
+# Research experience
+# =========================
+st.markdown("---")
+st.markdown("## 🌍 International Research Experience")
+
+cols = st.columns(4)
+images = [
+    ("media/japan_lab.jpg", "Cryo-EM @ Japan 🇯🇵"),
+    ("media/japan_lab_2.jpg", "Cryo-EM Analysis @ Japan 🇯🇵"),
+    ("media/japan_lab_3.jpg", "XRC @ Japan 🇯🇵"),
+    ("media/taiwan_lab_1.JPG", "AI & Bioinformatics Research – Taiwan 🇹🇼"),
+]
+
+for col, (img, cap) in zip(cols, images):
+    with col:
+        st.image(img, caption=cap, use_column_width=True)
+        
+# =========================
 # Footer
 # =========================
 st.markdown("---")
