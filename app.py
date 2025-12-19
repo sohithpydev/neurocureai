@@ -119,10 +119,7 @@ def plot_admet_radar(d):
 # Header
 # =========================
 st.image("logo.png", use_column_width=True)
-st.markdown("""
-# 🧠 NeuroCureAI  
-AI-Powered Platform for Alzheimer’s Drug Discovery
-""")
+st.markdown("# 🧠 NeuroCureAI\nAI-Powered Platform for Alzheimer’s Drug Discovery")
 
 # =========================
 # Sidebar
@@ -130,49 +127,51 @@ AI-Powered Platform for Alzheimer’s Drug Discovery
 with st.sidebar:
     uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
     if st.button("Predict") and uploaded is not None:
+        st.session_state.clear()
         st.session_state["run"] = True
-        st.session_state["file"] = uploaded
+        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
 
 # =========================
-# Main tabs
+# Tabs
 # =========================
-tab1, tab2, tab3 = st.tabs(["🔬 Prediction", "🧬 ADMET", "📊 Descriptors"])
+tab1, tab2 = st.tabs(["🔬 Prediction", "🧬 ADMET"])
 
 # =========================
 # Prediction tab
 # =========================
 with tab1:
     if st.session_state.get("run", False):
-        load_data = pd.read_table(st.session_state["file"], sep=" ", header=None)
+
+        input_df = st.session_state["input_df"]
         st.subheader("Input Molecules")
-        st.write(load_data)
+        st.dataframe(input_df)
 
-        load_data.to_csv("molecule.smi", sep="\t", index=False, header=False)
+        input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
 
-        with st.spinner("Calculating descriptors…"):
+        with st.spinner("Calculating molecular descriptors…"):
             desc_calc()
 
         desc = pd.read_csv("descriptors_output.csv")
-        st.subheader("Calculated Descriptors")
-        st.write(desc.shape)
+        st.subheader("Calculated Molecular Descriptors")
+        st.dataframe(desc)
 
         Xlist = list(pd.read_csv("descriptor_list.csv").columns)
         desc_subset = desc[Xlist]
 
-        st.subheader("Model Descriptor Subset")
-        st.write(desc_subset.shape)
+        st.subheader("Descriptor Subset Used by Model")
+        st.dataframe(desc_subset.iloc[:, :50])  # limit columns for UI
 
         model = load_model()
         preds = model.predict(desc_subset)
 
         results = pd.DataFrame({
-            "Molecule": load_data[1],
-            "SMILES": load_data[0],
+            "Molecule": input_df[1],
+            "SMILES": input_df[0],
             "Predicted pIC50": preds
         }).sort_values("Predicted pIC50", ascending=False)
 
         st.subheader("Prediction Output")
-        st.write(results)
+        st.dataframe(results)
 
         st.success(
             f"Best predicted compound: **{results.iloc[0]['Molecule']}** "
@@ -180,7 +179,6 @@ with tab1:
         )
 
         st.markdown(filedownload(results), unsafe_allow_html=True)
-
         st.session_state["results"] = results
 
 # =========================
@@ -198,14 +196,7 @@ with tab2:
             st.json(admet)
 
 # =========================
-# Descriptor tab
-# =========================
-with tab3:
-    if st.session_state.get("run", False):
-        st.write(desc_subset)
-
-# =========================
-# Research context (renamed)
+# Research context
 # =========================
 st.markdown("---")
 st.markdown("## 🔬 Bridging Computational Prediction with Experimental Research Environments")
@@ -227,7 +218,4 @@ for c, (img, cap) in zip(cols, images):
 # =========================
 st.markdown("---")
 st.image("sohith_dp.jpg", width=120)
-st.markdown("""
-**Developed by:** K. Sohith Reddy  
-📧 sohith.bme@gmail.com
-""")
+st.markdown("**Developed by:** K. Sohith Reddy  \n📧 sohith.bme@gmail.com")
