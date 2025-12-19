@@ -7,18 +7,71 @@ import base64
 import pickle
 
 # Molecular descriptor calculator
+from padelpy import padeldescriptor
+import glob
+
 def desc_calc():
-    # Performs the descriptor calculation
-    bashCommand = (
-    "java -Xms2G -Xmx2G -Djava.awt.headless=true "
-    "-jar ./PaDEL-Descriptor/PaDEL-Descriptor.jar "
-    "-removesalt -standardizenitro -fingerprints "
-    "-descriptortypes ./PaDEL-Descriptor/selected_fingerprints.xml "
-    "-dir ./ -file descriptors_output.csv"
-)
-    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-    output, error = process.communicate()
-    os.remove('molecule.smi')
+    # Mapping EXACTLY as used during training
+    fp = {
+        'AtomPairs2D': 'AtomPairs2DFingerprinter.xml',
+        'CDK': 'Fingerprinter.xml',
+        'CDKextended': 'ExtendedFingerprinter.xml',
+        'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
+        'EState': 'EStateFingerprinter.xml',
+        'KlekotaRoth': 'KlekotaRothFingerprinter.xml',
+        'MACCS': 'MACCSFingerprinter.xml',
+        'PubChem': 'PubchemFingerprinter.xml',
+        'Substructure': 'SubstructureFingerprinter.xml'
+    }
+
+    # Common PaDEL params (copied from training)
+    common_params = {
+        'mol_dir': 'molecule.smi',
+        'detectaromaticity': True,
+        'standardizenitro': True,
+        'standardizetautomers': True,
+        'threads': 2,
+        'removesalt': True,
+        'log': False,
+        'fingerprints': True
+    }
+
+    # Generate fingerprint CSVs one by one
+    for name, xml in fp.items():
+        padeldescriptor(
+            d_file=f"{name}.csv",
+            descriptortypes=f"./PaDEL-Descriptor/{xml}",
+            **common_params
+        )
+
+    # ---- Merge exactly like training ----
+    def load_fp_clean(path):
+        df = pd.read_csv(path)
+        df = df.drop_duplicates(subset="Name", keep="first")
+        return df.set_index("Name")
+
+    fp_files = [
+        "AtomPairs2D.csv",
+        "CDK.csv",
+        "CDKextended.csv",
+        "CDKgraphonly.csv",
+        "EState.csv",
+        "KlekotaRoth.csv",
+        "MACCS.csv",
+        "PubChem.csv",
+        "Substructure.csv"
+    ]
+
+    X = pd.concat([load_fp_clean(f) for f in fp_files], axis=1)
+
+    # Final descriptor file (this is what your model expects)
+    X.reset_index().to_csv("descriptors_output.csv", index=False)
+
+    # Cleanup intermediate files
+    for f in fp_files:
+        os.remove(f)
+
+    os.remove("molecule.smi")
 
 # File download
 def filedownload(df):
