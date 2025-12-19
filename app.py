@@ -5,6 +5,7 @@ import subprocess
 import os
 import base64
 import pickle
+import gzip
 
 # Molecular descriptor calculator
 def desc_calc():
@@ -23,8 +24,10 @@ def filedownload(df):
 
 # Model building
 def build_model(input_data):
-    # Reads in saved regression model
-    load_model = pickle.load(open('alzheimers_model.pbz2', 'rb'))
+    # Reads in saved regression model from GZIP file
+    with gzip.open('alz_model.pkl.gz', 'rb') as f:
+        load_model = pickle.load(f)
+    
     # Apply model to make predictions
     prediction = load_model.predict(input_data)
     st.header('**Prediction output**')
