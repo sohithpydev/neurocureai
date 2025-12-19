@@ -3,4 +3,8 @@ pandas
 numpy
 scikit-learn
 padelpy==0.1.16
+rdkit-pypi
+admet-ai
+torch
+plotly
 pillow
