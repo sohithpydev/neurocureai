@@ -199,14 +199,14 @@ with tab2:
 # Research context
 # =========================
 st.markdown("---")
-st.markdown("## 🔬 Bridging Computational Prediction with Experimental Research Environments")
+st.markdown("## My research experience so far...")
 
 cols = st.columns(4)
 images = [
-    ("media/japan_lab.jpg", "Cryo-EM data generation"),
-    ("media/japan_lab_2.jpg", "Cryo-EM structural analysis"),
-    ("media/japan_lab_3.jpg", "X-ray crystallography workflows"),
-    ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research"),
+    ("media/japan_lab.jpg", "Cryo-EM experimentation @ KEK, Japan"),
+    ("media/japan_lab_2.jpg", "Cryo-EM structural analysis @ KEK, Japan"),
+    ("media/japan_lab_3.jpg", "X-ray crystallography @ KEK, Japan"),
+    ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research @ CGU, Taiwan"),
 ]
 
 for c, (img, cap) in zip(cols, images):
@@ -217,5 +217,5 @@ for c, (img, cap) in zip(cols, images):
 # Footer
 # =========================
 st.markdown("---")
-st.image("sohith_dp.jpg", width=120)
-st.markdown("**Developed by:** K. Sohith Reddy  \n📧 sohith.bme@gmail.com")
+st.image("sohith_dp.jpg", width=150)
+st.markdown("**Developed by:** [Sohith Reddy](https://sohithpydev.github.io/sohith//)  \n Contact me: 📧 sohith.bme@gmail.com")
