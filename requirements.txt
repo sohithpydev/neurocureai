@@ -1,0 +1,6 @@
+streamlit
+pandas
+numpy
+scikit-learn
+padelpy==0.1.16
+pillow
