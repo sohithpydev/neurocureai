@@ -217,19 +217,19 @@ st.markdown("""
 
 <div class="masonry">
     <div>
-        <img src="media/japan_lab.jpg">
+        <img src="neurocureai/media/japan_lab.jpg">
         <div class="caption">Cryo-EM experimentation @ KEK, 🇯🇵</div>
     </div>
     <div>
-        <img src="media/japan_lab_2.jpg">
+        <img src="neurocureai/media/japan_lab_2.jpg">
         <div class="caption">Cryo-EM structural analysis @ KEK, 🇯🇵</div>
     </div>
     <div>
-        <img src="media/japan_lab_3.jpg">
+        <img src="neurocureai/media/japan_lab_3.jpg">
         <div class="caption">X-ray crystallography @ KEK, 🇯🇵</div>
     </div>
     <div>
-        <img src="media/taiwan_lab_1.JPG">
+        <img src="neurocureai/media/taiwan_lab_1.JPG">
         <div class="caption">AI-driven bioinformatics research @ CGU, 🇹🇼</div>
     </div>
 </div>
