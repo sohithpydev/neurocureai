@@ -145,7 +145,6 @@ with tab1:
         input_df = st.session_state["input_df"]
         st.subheader("Input Molecules")
         st.dataframe(input_df)
-        st.dataframe(input_df.shape)
 
         input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
 
@@ -155,14 +154,12 @@ with tab1:
         desc = pd.read_csv("descriptors_output.csv")
         st.subheader("Calculated Molecular Descriptors")
         st.dataframe(desc)
-        st.dataframe(desc.shape)
 
         Xlist = list(pd.read_csv("descriptor_list.csv").columns)
         desc_subset = desc[Xlist]
 
         st.subheader("Descriptor Subset Used by Model")
         st.dataframe(desc_subset.iloc[:, :50])  # limit columns for UI
-        st.dataframe(desc_subset.shape)
 
         model = load_model()
         preds = model.predict(desc_subset)
