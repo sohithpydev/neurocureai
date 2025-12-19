@@ -14,10 +14,10 @@ import plotly.graph_objects as go
 from padelpy import padeldescriptor
 
 # =========================
-# ADMET-AI (REAL MODELS)
+# RDKit (lightweight ADMET rules)
 # =========================
-from admet_ai import ADMETModel
 from rdkit import Chem
+from rdkit.Chem import Descriptors
 
 # =========================
 # Page config
@@ -26,15 +26,6 @@ st.set_page_config(
     page_title="NeuroCureAI",
     layout="wide"
 )
-
-# =========================
-# Load ADMET model (cached)
-# =========================
-@st.cache_resource
-def load_admet_model():
-    return ADMETModel()
-
-admet_model = load_admet_model()
 
 # =========================
 # Descriptor calculation
@@ -107,21 +98,43 @@ def load_qsar_model():
         return pickle.load(f)
 
 # =========================
-# REAL ADMET prediction
+# ADMET (rule-based, real chemistry)
 # =========================
-def predict_admet(smiles):
+def compute_admet_rules(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return None
 
-    preds = admet_model.predict(smiles)
+    mw = Descriptors.MolWt(mol)
+    logp = Descriptors.MolLogP(mol)
+    hbd = Descriptors.NumHDonors(mol)
+    hba = Descriptors.NumHAcceptors(mol)
+    tpsa = Descriptors.TPSA(mol)
+    rot = Descriptors.NumRotatableBonds(mol)
+
+    lipinski = int(mw <= 500 and logp <= 5 and hbd <= 5 and hba <= 10)
+    veber = int(tpsa <= 140 and rot <= 10)
+    bbb = int(tpsa < 90 and logp >= 2)
 
     return {
-        "Absorption (HIA)": preds.get("HIA", 0),
-        "BBB Penetration": preds.get("BBB", 0),
-        "CYP2D6 Inhibition": preds.get("CYP2D6", 0),
-        "Clearance": preds.get("Clearance", 0),
-        "AMES Toxicity": preds.get("AMES", 0),
+        "Lipinski Pass": lipinski,
+        "Veber Pass": veber,
+        "BBB Likely": bbb,
+        "MW": round(mw, 2),
+        "LogP": round(logp, 2),
+        "TPSA": round(tpsa, 2),
+        "HBD": hbd,
+        "HBA": hba,
+        "RotB": rot
+    }
+
+def admet_to_radar(admet):
+    return {
+        "Absorption": admet["Lipinski Pass"],
+        "Permeability": admet["Veber Pass"],
+        "BBB": admet["BBB Likely"],
+        "Drug-likeness": int(admet["Lipinski Pass"] and admet["Veber Pass"]),
+        "Safety Proxy": 1 - int(admet["LogP"] > 5)
     }
 
 def plot_admet_radar(admet_dict):
@@ -151,13 +164,13 @@ st.markdown("""
 # 🧠 NeuroCureAI  
 ### AI-Powered Platform for Alzheimer’s Drug Discovery
 
-Predict **pIC₅₀** against **Amyloid Beta A4** and evaluate **real ADMET profiles** using
-machine-learning models.
+Predict **pIC₅₀** against **Amyloid Beta A4** and evaluate **ADMET-relevant properties**
+using physicochemical and rule-based filters.
 """)
 
 st.info(
-    "Predictions are generated using machine-learning models trained on public datasets. "
-    "All results are for research purposes only and require experimental validation."
+    "Predictions are for research purposes only and require experimental validation. "
+    "ADMET properties are estimated using established early-stage drug-discovery rules."
 )
 
 # =========================
@@ -166,7 +179,10 @@ st.info(
 with st.sidebar:
     st.header("Upload Molecules")
     uploaded_file = st.file_uploader("Upload .txt file", type=["txt"])
-    st.markdown("[Example input file](https://raw.githubusercontent.com/dataprofessor/bioactivity-prediction-app/main/example_acetylcholinesterase.txt)")
+    st.markdown(
+        "[Example input file]"
+        "(https://raw.githubusercontent.com/dataprofessor/bioactivity-prediction-app/main/example_acetylcholinesterase.txt)"
+    )
 
 # =========================
 # Main logic
@@ -215,7 +231,7 @@ if st.sidebar.button("Predict") and uploaded_file is not None:
 
     # ---- ADMET tab ----
     with tab2:
-        st.subheader("Real ADMET Profile (ML-based)")
+        st.subheader("ADMET Profile (Rule-Based)")
 
         selected = st.selectbox(
             "Select compound",
@@ -226,43 +242,30 @@ if st.sidebar.button("Predict") and uploaded_file is not None:
             results["Molecule"] == selected, "SMILES"
         ].values[0]
 
-        admet = predict_admet(smiles)
+        admet_raw = compute_admet_rules(smiles)
 
-        if admet is None:
+        if admet_raw is None:
             st.error("Invalid SMILES — cannot compute ADMET")
         else:
+            radar_vals = admet_to_radar(admet_raw)
             st.plotly_chart(
-                plot_admet_radar(admet),
+                plot_admet_radar(radar_vals),
                 use_container_width=True
             )
 
-        st.caption(
-            "ADMET properties predicted using pretrained neural networks from "
-            "**admet_ai** (Swanson et al.)."
-        )
+            st.subheader("ADMET Details")
+            st.json(admet_raw)
+
+            st.caption(
+                "ADMET properties estimated using Lipinski Rule of Five, "
+                "Veber rules, and CNS permeability heuristics."
+            )
 
     # ---- Descriptor tab ----
     with tab3:
         st.subheader("Descriptor Matrix Used for Prediction")
         st.write(desc_subset)
         st.write(desc_subset.shape)
-
-# =========================
-# Research experience
-# =========================
-st.markdown("---")
-st.markdown("## 🌍 International Research Experience")
-
-cols = st.columns(3)
-images = [
-    ("media/japan_lab.jpg", "Computational Drug Discovery @ Japan 🇯🇵"),
-    ("media/taiwan_lab.jpg", "AI & Bioinformatics Research @ Taiwan 🇹🇼"),
-    ("media/japan_lab_2.jpg", "Our KEK team @ Japan 🇯🇵")
-]
-
-for col, (img, cap) in zip(cols, images):
-    with col:
-        st.image(img, caption=cap, use_column_width=True)
 
 # =========================
 # Footer
@@ -282,4 +285,3 @@ with col2:
     📧 **Contact:** sohith.bme@gmail.com  
     🌍 International research experience: Japan 🇯🇵 · Taiwan 🇹🇼  
     """)
-
