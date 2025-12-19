@@ -144,8 +144,8 @@ with tab1:
 
         input_df = st.session_state["input_df"]
         st.subheader("Input Molecules")
-        st.caption(f"Shape: {input_df.shape[0]} molecules × {input_df.shape[1]} columns")
         st.dataframe(input_df)
+        st.dataframe(input_df.shape)
 
         input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
 
@@ -154,18 +154,15 @@ with tab1:
 
         desc = pd.read_csv("descriptors_output.csv")
         st.subheader("Calculated Molecular Descriptors")
-        st.caption(f"Shape: {desc.shape[0]} molecules × {desc.shape[1]} descriptors")
         st.dataframe(desc)
+        st.dataframe(desc.shape)
 
         Xlist = list(pd.read_csv("descriptor_list.csv").columns)
         desc_subset = desc[Xlist]
 
         st.subheader("Descriptor Subset Used by Model")
-        st.caption(
-            f"Shape: {desc_subset.shape[0]} molecules × "
-            f"{desc_subset.shape[1]} selected descriptors"
-        )
-        st.dataframe(desc_subset.iloc[:, :50])
+        st.dataframe(desc_subset.iloc[:, :50])  # limit columns for UI
+        st.dataframe(desc_subset.shape)
 
         model = load_model()
         preds = model.predict(desc_subset)
@@ -177,7 +174,6 @@ with tab1:
         }).sort_values("Predicted pIC50", ascending=False)
 
         st.subheader("Prediction Output")
-        st.caption(f"Shape: {results.shape[0]} predictions × {results.shape[1]} columns")
         st.dataframe(results)
 
         st.success(
@@ -222,12 +218,13 @@ for i in range(0, len(images), n_cols):
         with col:
             st.image(img, caption=cap, width="stretch")
 
+
 # =========================
 # Footer
 # =========================
 st.markdown("---")
 
-col1, col2 = st.columns([1, 4])
+col1, col2 = st.columns([1, 4])  # adjust ratio if needed
 
 with col1:
     st.image("sohith_dp.jpg", width=150)
@@ -241,3 +238,4 @@ with col2:
         📧 **Contact:** sohith.bme@gmail.com
         """
     )
+
