@@ -5,6 +5,8 @@ import subprocess
 import os
 import base64
 import pickle
+import bz2
+
 
 # Molecular descriptor calculator
 from padelpy import padeldescriptor
@@ -83,7 +85,8 @@ def filedownload(df):
 # Model building
 def build_model(input_data):
     # Reads in saved regression model
-    load_model = pickle.load(open('alzheimers_model.pbz2', 'rb'))
+    with bz2.BZ2File('alzheimers_model.pbz2', 'rb') as f:
+        load_model = pickle.load(f)
     # Apply model to make predictions
     prediction = load_model.predict(input_data)
     st.header('**Prediction output**')
