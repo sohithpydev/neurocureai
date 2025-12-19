@@ -198,24 +198,61 @@ with tab2:
 # =========================
 # Research context
 # =========================
-st.markdown("---")
-st.markdown("## My research experience so far...")
+st.markdown("""
+<style>
+.masonry {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+.masonry img {
+    width: 100%;
+    border-radius: 8px;
+}
+.caption {
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+</style>
 
-cols = st.columns(4)
-images = [
-    ("media/japan_lab.jpg", "Cryo-EM experimentation @ KEK, Japan"),
-    ("media/japan_lab_2.jpg", "Cryo-EM structural analysis @ KEK, Japan"),
-    ("media/japan_lab_3.jpg", "X-ray crystallography @ KEK, Japan"),
-    ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research @ CGU, Taiwan"),
-]
+<div class="masonry">
+    <div>
+        <img src="media/japan_lab.jpg">
+        <div class="caption">Cryo-EM experimentation @ KEK, 🇯🇵</div>
+    </div>
+    <div>
+        <img src="media/japan_lab_2.jpg">
+        <div class="caption">Cryo-EM structural analysis @ KEK, 🇯🇵</div>
+    </div>
+    <div>
+        <img src="media/japan_lab_3.jpg">
+        <div class="caption">X-ray crystallography @ KEK, 🇯🇵</div>
+    </div>
+    <div>
+        <img src="media/taiwan_lab_1.JPG">
+        <div class="caption">AI-driven bioinformatics research @ CGU, 🇹🇼</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-for c, (img, cap) in zip(cols, images):
-    with c:
-        st.image(img, caption=cap, use_column_width=True)
 
 # =========================
 # Footer
 # =========================
 st.markdown("---")
-st.image("sohith_dp.jpg", width=150)
-st.markdown("**Developed by:** [Sohith Reddy](https://sohithpydev.github.io/sohith//)  \n Contact me: 📧 sohith.bme@gmail.com")
+
+col1, col2 = st.columns([1, 4])  # adjust ratio if needed
+
+with col1:
+    st.image("sohith_dp.jpg", width=150)
+
+with col2:
+    st.markdown(
+        """
+        **Developed by:**  
+        [Sohith Reddy](https://sohithpydev.github.io/sohith/)  
+
+        📧 **Contact:** sohith.bme@gmail.com
+        """
+    )
+
