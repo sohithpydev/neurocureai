@@ -198,7 +198,20 @@ with tab2:
 # =========================
 # Research context
 # =========================
-st.markdown("""
+import base64
+from pathlib import Path
+
+def img_to_base64(path):
+    return base64.b64encode(Path(path).read_bytes()).decode()
+
+images = [
+    ("media/japan_lab.jpg", "Cryo-EM experimentation @ KEK, 🇯🇵"),
+    ("media/japan_lab_2.jpg", "Cryo-EM structural analysis @ KEK, 🇯🇵"),
+    ("media/japan_lab_3.jpg", "X-ray crystallography @ KEK, 🇯🇵"),
+    ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research @ CGU, 🇹🇼"),
+]
+
+html = """
 <style>
 .masonry {
     display: grid;
@@ -214,26 +227,22 @@ st.markdown("""
     margin-top: 4px;
 }
 </style>
-
 <div class="masonry">
+"""
+
+for img, cap in images:
+    b64 = img_to_base64(img)
+    html += f"""
     <div>
-        <img src="neurocureai/media/japan_lab.jpg">
-        <div class="caption">Cryo-EM experimentation @ KEK, 🇯🇵</div>
+        <img src="data:image/jpeg;base64,{b64}">
+        <div class="caption">{cap}</div>
     </div>
-    <div>
-        <img src="neurocureai/media/japan_lab_2.jpg">
-        <div class="caption">Cryo-EM structural analysis @ KEK, 🇯🇵</div>
-    </div>
-    <div>
-        <img src="neurocureai/media/japan_lab_3.jpg">
-        <div class="caption">X-ray crystallography @ KEK, 🇯🇵</div>
-    </div>
-    <div>
-        <img src="neurocureai/media/taiwan_lab_1.JPG">
-        <div class="caption">AI-driven bioinformatics research @ CGU, 🇹🇼</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    """
+
+html += "</div>"
+
+st.markdown(html, unsafe_allow_html=True)
+
 
 
 # =========================
