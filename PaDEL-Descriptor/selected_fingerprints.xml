@@ -1,0 +1,33 @@
+<DescriptorList>
+    <Descriptor name="AtomPairs2D" type="fingerprint">
+        <File>AtomPairs2DFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="EState" type="fingerprint">
+        <File>EStateFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="CDK" type="fingerprint">
+        <File>Fingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="CDKextended" type="fingerprint">
+        <File>ExtendedFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="CDKgraphonly" type="fingerprint">
+        <File>GraphOnlyFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="KlekotaRoth" type="fingerprint">
+        <File>KlekotaRothFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="MACCS" type="fingerprint">
+        <File>MACCSFingerprinter.xml</File>
+    </Descriptor>
+
+    <Descriptor name="PubChem" type="fingerprint">
+        <File>PubchemFingerprinter.xml</File>
+    </Descriptor>
+</DescriptorList>
