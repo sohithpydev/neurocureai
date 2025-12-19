@@ -3,8 +3,7 @@ pandas
 numpy
 scikit-learn
 padelpy==0.1.16
+mordred
 rdkit-pypi
-admet-ai
-torch
-plotly
 pillow
+plotly
