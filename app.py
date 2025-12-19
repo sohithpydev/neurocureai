@@ -198,11 +198,8 @@ with tab2:
 # =========================
 # Research context
 # =========================
-import base64
-from pathlib import Path
-
-def img_to_base64(path):
-    return base64.b64encode(Path(path).read_bytes()).decode()
+st.markdown("---")
+st.markdown("## Bridging AI with benchwork results!")
 
 images = [
     ("media/japan_lab.jpg", "Cryo-EM experimentation @ KEK, 🇯🇵"),
@@ -211,38 +208,12 @@ images = [
     ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research @ CGU, 🇹🇼"),
 ]
 
-html = """
-<style>
-.masonry {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-}
-.masonry img {
-    width: 100%;
-    border-radius: 8px;
-}
-.caption {
-    font-size: 0.85rem;
-    margin-top: 4px;
-}
-</style>
-<div class="masonry">
-"""
-
-for img, cap in images:
-    b64 = img_to_base64(img)
-    html += f"""
-    <div>
-        <img src="data:image/jpeg;base64,{b64}">
-        <div class="caption">{cap}</div>
-    </div>
-    """
-
-html += "</div>"
-
-st.markdown(html, unsafe_allow_html=True)
-
+n_cols = 4
+for i in range(0, len(images), n_cols):
+    cols = st.columns(n_cols)
+    for col, (img, cap) in zip(cols, images[i:i+n_cols]):
+        with col:
+            st.image(img, caption=cap, width="stretch")
 
 
 # =========================
