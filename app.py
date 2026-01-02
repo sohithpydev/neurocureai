@@ -12,9 +12,99 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 
 # =========================
-# Page config
+# Page configuration
 # =========================
-st.set_page_config(page_title="NeuroCureAI", layout="wide")
+st.set_page_config(
+    page_title="NeuroCureAI",
+    page_icon="🧠",
+    layout="wide"
+)
+
+# =========================
+# HERO SECTION
+# =========================
+st.markdown(
+    """
+    <div style="text-align:center; padding: 30px 10px;">
+        <h1 style="font-size:3rem;">🧠 NeuroCureAI</h1>
+        <p style="font-size:1.2rem; color:#555;">
+        AI-Powered Drug Discovery Platform for Alzheimer’s Disease
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.image("media/hero_brain_ai.png", use_container_width=True)
+
+# =========================
+# HOW TO USE
+# =========================
+st.markdown("---")
+st.markdown("## 🚀 How to Use NeuroCureAI")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("### 1️⃣ Upload Molecules")
+    st.markdown(
+        """
+        Upload a `.txt` file containing **SMILES and molecule names**
+        separated by space.
+
+        Example:
+        ```
+        CC(=O)Oc1ccccc1 Aspirin
+        ```
+        """
+    )
+
+with col2:
+    st.markdown("### 2️⃣ Run AI Prediction")
+    st.markdown(
+        """
+        Click **Run Prediction** to:
+        - Generate molecular fingerprints  
+        - Apply trained ML model  
+        - Rank compounds by predicted potency
+        """
+    )
+
+with col3:
+    st.markdown("### 3️⃣ Explore ADMET")
+    st.markdown(
+        """
+        Analyze drug-likeness using:
+        - Lipinski & Veber rules  
+        - BBB likelihood  
+        - Interactive radar visualization
+        """
+    )
+
+# =========================
+# WORKFLOW IMAGE
+# =========================
+st.markdown("---")
+st.markdown("## 🔁 AI-Driven Drug Discovery Workflow")
+st.image("media/workflow.png", use_container_width=True)
+st.caption("From molecular structure to AI-based activity prediction and ADMET evaluation")
+
+# =========================
+# SIDEBAR
+# =========================
+with st.sidebar:
+    st.markdown("## 🛠 Control Panel")
+    st.markdown("Upload molecule file and start analysis")
+
+    uploaded = st.file_uploader(
+        "📄 Upload molecule file (.txt)",
+        type=["txt"]
+    )
+
+    if st.button("🚀 Run Prediction") and uploaded is not None:
+        st.session_state.clear()
+        st.session_state["run"] = True
+        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
 
 # =========================
 # Descriptor calculation
@@ -78,10 +168,10 @@ def load_model():
 def filedownload(df):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
-    return f'<a href="data:file/csv;base64,{b64}" download="prediction.csv">Download Predictions</a>'
+    return f'<a href="data:file/csv;base64,{b64}" download="prediction.csv">📥 Download Predictions</a>'
 
 # =========================
-# ADMET (rule-based)
+# ADMET calculation
 # =========================
 def compute_admet(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -98,68 +188,54 @@ def compute_admet(smiles):
     return {
         "Lipinski": int(mw <= 500 and logp <= 5 and hbd <= 5 and hba <= 10),
         "Veber": int(tpsa <= 140 and rot <= 10),
-        "BBB Likely": int(tpsa < 90 and logp >= 2),
-        "MW": round(mw, 2),
-        "LogP": round(logp, 2),
-        "TPSA": round(tpsa, 2)
+        "BBB Likely": int(tpsa < 90 and logp >= 2)
     }
 
 def plot_admet_radar(d):
-    labels = list(d.keys())
-    values = list(d.values())
     fig = go.Figure(go.Scatterpolar(
-        r=values + [values[0]],
-        theta=labels + [labels[0]],
+        r=list(d.values()),
+        theta=list(d.keys()),
         fill='toself'
     ))
-    fig.update_layout(polar=dict(radialaxis=dict(range=[0,1])), showlegend=False)
+    fig.update_layout(
+        polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+        showlegend=False
+    )
     return fig
 
 # =========================
-# Header
+# MAIN TABS
 # =========================
-st.image("logo.png", use_column_width=True)
-st.markdown("# 🧠 NeuroCureAI\nAI-Powered Platform for Alzheimer’s Drug Discovery")
+tab1, tab2 = st.tabs(["🔬 Prediction", "🧬 ADMET Analysis"])
 
 # =========================
-# Sidebar
-# =========================
-with st.sidebar:
-    uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
-    if st.button("Predict") and uploaded is not None:
-        st.session_state.clear()
-        st.session_state["run"] = True
-        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
-
-# =========================
-# Tabs
-# =========================
-tab1, tab2 = st.tabs(["🔬 Prediction", "🧬 ADMET"])
-
-# =========================
-# Prediction tab
+# Prediction Tab
 # =========================
 with tab1:
-    if st.session_state.get("run", False):
+    st.markdown("## 🔬 Molecular Activity Prediction")
 
+    if st.session_state.get("run", False):
         input_df = st.session_state["input_df"]
-        st.subheader("Input Molecules")
-        st.dataframe(input_df)
+
+        st.info("📥 Molecule file uploaded successfully")
+
+        with st.expander("📄 View Input Molecules"):
+            st.dataframe(input_df)
 
         input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
 
-        with st.spinner("Calculating molecular descriptors…"):
+        with st.spinner("🧪 Calculating molecular descriptors..."):
             desc_calc()
 
+        st.success("✅ Descriptor calculation completed")
+
         desc = pd.read_csv("descriptors_output.csv")
-        st.subheader("Calculated Molecular Descriptors")
-        st.dataframe(desc)
+
+        with st.expander("🧬 Descriptor Overview"):
+            st.dataframe(desc.iloc[:, :40])
 
         Xlist = list(pd.read_csv("descriptor_list.csv").columns)
         desc_subset = desc[Xlist]
-
-        st.subheader("Descriptor Subset Used by Model")
-        st.dataframe(desc_subset.iloc[:, :50])  # limit columns for UI
 
         model = load_model()
         preds = model.predict(desc_subset)
@@ -170,7 +246,7 @@ with tab1:
             "Predicted pIC50": preds
         }).sort_values("Predicted pIC50", ascending=False)
 
-        st.subheader("Prediction Output")
+        st.subheader("🏆 Prediction Results")
         st.dataframe(results)
 
         st.success(
@@ -182,36 +258,37 @@ with tab1:
         st.session_state["results"] = results
 
 # =========================
-# ADMET tab
+# ADMET Tab
 # =========================
 with tab2:
+    st.markdown("## 🧬 ADMET & Drug-Likeness Evaluation")
+    st.markdown(
+        "Assess pharmacokinetic suitability and BBB penetration potential."
+    )
+
     if "results" in st.session_state:
         results = st.session_state["results"]
         mol = st.selectbox("Select compound", results["Molecule"])
         smi = results.loc[results["Molecule"] == mol, "SMILES"].values[0]
-        admet = compute_admet(smi)
 
+        admet = compute_admet(smi)
         if admet:
             st.plotly_chart(plot_admet_radar(admet), use_container_width=True)
             st.json(admet)
 
 # =========================
-# Research context
+# RESEARCH CONTEXT
 # =========================
 st.markdown("---")
-st.markdown("## Bridging AI with benchwork results!")
-
-st.image(
-    "media/portfolio.png",
-    use_container_width=True
-)
+st.markdown("## 🔗 Bridging AI with Benchwork")
+st.image("media/portfolio.png", use_container_width=True)
+st.caption("Integrating computational predictions with experimental validation")
 
 # =========================
-# Footer
+# FOOTER
 # =========================
 st.markdown("---")
-
-col1, col2 = st.columns([1, 4])  # adjust ratio if needed
+col1, col2 = st.columns([1, 4])
 
 with col1:
     st.image("sohith_dp.jpg", width=150)
@@ -222,7 +299,9 @@ with col2:
         **Developed by:**  
         [Sohith Reddy](https://sohithpydev.github.io/sohith/)  
 
-        📧 **Contact:** sohith.bme@gmail.com
+        📧 **Contact:** sohith.bme@gmail.com  
+
+        💡 *This platform demonstrates how AI can accelerate early-stage
+        neurodegenerative drug discovery.*
         """
     )
-
