@@ -206,7 +206,6 @@ st.image(
     use_container_width=True
 )
 
-
 # =========================
 # Footer
 # =========================
