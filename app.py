@@ -201,19 +201,10 @@ with tab2:
 st.markdown("---")
 st.markdown("## Bridging AI with benchwork results!")
 
-images = [
-    ("media/japan_lab.jpg", "Cryo-EM experimentation @ KEK, 🇯🇵"),
-    ("media/japan_lab_2.jpg", "Cryo-EM structural analysis @ KEK, 🇯🇵"),
-    ("media/japan_lab_3.jpg", "X-ray crystallography @ KEK, 🇯🇵"),
-    ("media/taiwan_lab_1.JPG", "AI-driven bioinformatics research @ CGU, 🇹🇼"),
-]
-
-n_cols = 4
-for i in range(0, len(images), n_cols):
-    cols = st.columns(n_cols)
-    for col, (img, cap) in zip(cols, images[i:i+n_cols]):
-        with col:
-            st.image(img, caption=cap, width="stretch")
+st.image(
+    "media/PORTFOLIO.png",
+    use_container_width=True
+)
 
 
 # =========================
