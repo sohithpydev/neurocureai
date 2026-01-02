@@ -35,7 +35,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.image("media/hero_brain_ai.png", use_container_width=True)
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    st.image("media/hero_brain_ai.png", use_column_width=True)
 
 # =========================
 # HOW TO USE
@@ -49,12 +52,12 @@ with col1:
     st.markdown("### 1️⃣ Upload Molecules")
     st.markdown(
         """
-        Upload a `.txt` file containing **SMILES and molecule names**
+        Upload a `.txt` file containing **molecule ID and SMILES**
         separated by space.
 
         Example:
         ```
-        CC(=O)Oc1ccccc1 Aspirin
+        Aspirin CC(=O)Oc1ccccc1 
         ```
         """
     )
@@ -86,7 +89,7 @@ with col3:
 # =========================
 st.markdown("---")
 st.markdown("## 🔁 AI-Driven Drug Discovery Workflow")
-st.image("media/workflow.png", use_container_width=True)
+st.image("media/workflow.jpg", use_container_width=True)
 st.caption("From molecular structure to AI-based activity prediction and ADMET evaluation")
 
 # =========================
