@@ -202,7 +202,7 @@ st.markdown("---")
 st.markdown("## Bridging AI with benchwork results!")
 
 st.image(
-    "media/PORTFOLIO.png",
+    "media/portfolio.png",
     use_container_width=True
 )
 
