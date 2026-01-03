@@ -296,7 +296,7 @@ st.markdown("## 🌟 User Reviews & Feedback")
 rev_col1, rev_col2, rev_col3 = st.columns(3)
 
 with rev_col1:
-    st.image("media/scott.jpg", width=80) # Replace with your actual filename
+    st.image("media/scott.jpeg", width=80) # Replace with your actual filename
     st.markdown("**Scott C. Schuyler**")
     st.markdown("⭐ 4.5/5")
     st.caption("Associate Professor, Chang Gung University, Taiwan")
@@ -310,7 +310,7 @@ with rev_col2:
     st.info("""“NeuroCureAI has changed the game for our lead discovery. I’m usually skeptical about AI in the lab, but our summer intern, Sohith, used the platform to create a model that provided results very close to our experimental values. He excelled at the lab work and then took it further with this technology. Sohith, you rock! For the next version, it would be great to see integrated MD simulations... We'll definitely use this for future tests!”""")
 
 with rev_col3:
-    st.image("media/brooks.jpg", width=80) # Replace with your actual filename
+    st.image("media/brooks.png", width=80) # Replace with your actual filename
     st.markdown("**Brooks Robinson**")
     st.markdown("⭐ 4.2/5")
     st.caption("Program Director, UCCS, USA")
