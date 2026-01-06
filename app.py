@@ -228,7 +228,7 @@ with tab_discovery:
             input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
             time.sleep(1) 
             
-            st.info("Calculating comprehensive molecular fingerprints and descriptors...")
+            st.info("Calculating comprehensive molecular fingerprints...might take upto 1 minute, please wait!")
             desc_calc()
             st.success("✅ Computational descriptors generated successfully.")
 
