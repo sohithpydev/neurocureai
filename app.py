@@ -81,6 +81,13 @@ st.markdown("""
         letter-spacing: -2px;
         margin-bottom: 10px;
     }
+
+    /* Custom Read More Styling */
+    .description-box {
+        font-size: 1.1rem;
+        color: #444;
+        line-height: 1.6;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -180,13 +187,32 @@ with tab_home:
     st.markdown('<h1 class="title-text" style="text-align:center;">NeuroCureAI</h1>', unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; font-size:1.6rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
     
-    # HERO SECTION WITH GIF SUPPORT
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # HERO SECTION WITH GIF SUPPORT AND DESCRIPTION
+    col1, col2, col3 = st.columns([0.5, 3, 0.5])
     with col2:
-        if os.path.exists("media/hero_brain_ai.gif"):
-            st.image("media/hero_brain_ai.gif", use_column_width=True) # GIF Autoplay
-        else:
-            st.image("media/hero_brain_ai.png", use_column_width=True) # Fallback to static
+        col2_1, col2_2 = st.columns([1.2, 1])
+        with col2_1:
+            if os.path.exists("media/hero_brain_ai.gif"):
+                st.image("media/hero_brain_ai.gif", use_column_width=True) # GIF Autoplay
+            else:
+                st.image("media/hero_brain_ai.png", use_column_width=True) # Fallback to static
+        
+        with col2_2:
+            st.markdown("<div style='padding-top: 20px;'></div>", unsafe_allow_html=True)
+            st.markdown("""
+                <div class='description-box'>
+                <b>NeuroCureAI</b> leverages advanced Machine Learning and Molecular Fingerprinting to accelerate the identification of potent therapeutic inhibitors. 
+                Our platform streamlines the journey from raw chemical data to high-confidence lead compounds.
+                </div>
+            """, unsafe_allow_html=True)
+            
+            with st.expander("Read more.."):
+                st.write("""
+                    By integrating PaDEL-Descriptor technology with robust Random Forest regression models, 
+                    NeuroCureAI predicts the pIC50 values of novel molecules with high precision. 
+                    The tool further evaluates pharmacokinetic feasibility through ADMET profiling, ensuring 
+                    that discovered leads are not just active, but drug-ready.
+                """)
     
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
