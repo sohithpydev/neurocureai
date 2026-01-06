@@ -164,21 +164,22 @@ with tab_reviews:
     
     r1, r2, r3 = st.columns(3)
     with r1:
-        st.image("media/scott.jpeg", width=120)
+        # Set width to 150 for all to match size
+        st.image("media/scott.jpeg", width=150) 
         st.markdown("**Scott C. Schuyler**")
         st.markdown("⭐ 4.5/5")
         st.caption("Associate Professor, Chang Gung University, Taiwan")
         st.info("“Excellent tool for lead optimization. The transition from 'in silico' to 'in vitro' was seamless.”")
 
     with r2:
-        st.image("media/toshiya.jpg", width=120)
+        st.image("media/toshiya.jpg", width=150) 
         st.markdown("**Toshiya Senda**")
         st.markdown("⭐ 3.5/5")
         st.caption("Research Director, KEK, Japan")
         st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
 
     with r3:
-        st.image("media/brooks.png", width=120)
+        st.image("media/brooks.png", width=150) 
         st.markdown("**Brooks Robinson**")
         st.markdown("⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
