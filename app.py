@@ -301,7 +301,7 @@ with tab_reviews:
 
 # 5. INQUIRY
 with tab_contact:
-    st.header("📞 Academic Profile")
+    st.header("📞 Developer Profile")
     c1, c2 = st.columns([1, 4])
     with c1: st.image("sohith_dp.jpg", width=200)
     with c2:
@@ -310,7 +310,7 @@ with tab_contact:
         Final year **B.E. Bioinformatics Undergraduate** at **Saveetha School of Engineering (SSE)**.  
         Research specialization at the intersection of **Artificial Intelligence** and **Neurodegenerative Lead Discovery**.
         
-        **Current Research Tenure:** Research Assistant at **Chang Gung University (CGU)**, Taoyuan, Taiwan.
+        **Current Designation:** Research Assistant at **Chang Gung University (CGU)**, Taoyuan, Taiwan.
         """)
         st.markdown("---")
         st.markdown("**Portfolio:** [sohithpydev.github.io/sohith/](https://sohithpydev.github.io/sohith/)")
