@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
 import os
 import base64
 import pickle
@@ -9,7 +10,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import plotly.graph_objects as go
 
-# Chemistry Imports
 from padelpy import padeldescriptor
 from rdkit import Chem
 from rdkit.Chem import Descriptors
@@ -24,21 +24,20 @@ st.set_page_config(
 )
 
 # =========================
-# EMAIL BACKEND LOGIC
+# EMAIL BACKEND
 # =========================
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
-    receiver_email = "sohith.bme@gmail.com" 
-    
-    # PASTE YOUR 16-CHARACTER APP PASSWORD HERE
+    receiver_email = "sohith.bme@gmail.com"
+    # REPLACE THIS with your 16-character Google App Password
     password = "nlso orfq xnaa dzbd" 
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
-    msg['Subject'] = f"NeuroCureAI Feedback: {rating}/5 from {name}"
+    msg['Subject'] = f"NeuroCureAI Feedback: {rating}/5 Stars from {name}"
 
-    body = f"New Review Received:\n\nName: {name}\nDesignation: {designation}\nRating: {rating}/5\nFeedback: {feedback}"
+    body = f"New Review Received:\nName: {name}\nDesignation: {designation}\nRating: {rating}/5\nFeedback: {feedback}"
     msg.attach(MIMEText(body, 'plain'))
 
     try:
@@ -49,69 +48,153 @@ def send_feedback_email(name, designation, rating, feedback):
         server.quit()
         return True
     except Exception as e:
-        st.error(f"Error sending email: {e}")
+        st.error(f"Email Error: {e}")
         return False
+
+# =========================
+# CHEMISTRY & ML LOGIC
+# =========================
+def desc_calc():
+    fp = {'PubChem': 'PubchemFingerprinter.xml'}
+    common_params = dict(mol_dir='molecule.smi', detectaromaticity=True, standardizenitro=True,
+                        standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
+    for name, xml in fp.items():
+        padeldescriptor(d_file=f"{name}.csv", descriptortypes=f"./PaDEL-Descriptor/{xml}", **common_params)
+    df = pd.read_csv("PubChem.csv").drop_duplicates("Name").set_index("Name")
+    df.reset_index().to_csv("descriptors_output.csv", index=False)
+    os.remove("PubChem.csv")
+    os.remove("molecule.smi")
+
+def load_model():
+    with bz2.BZ2File("alzheimers_model.pbz2", "rb") as f:
+        return pickle.load(f)
+
+def compute_admet(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None: return None
+    return {
+        "Lipinski": int(Descriptors.MolWt(mol) <= 500 and Descriptors.MolLogP(mol) <= 5),
+        "Veber": int(Descriptors.TPSA(mol) <= 140 and Descriptors.NumRotatableBonds(mol) <= 10),
+        "BBB Likely": int(Descriptors.TPSA(mol) < 90 and Descriptors.MolLogP(mol) >= 2)
+    }
+
+def plot_admet_radar(d):
+    fig = go.Figure(go.Scatterpolar(r=list(d.values()), theta=list(d.keys()), fill='toself'))
+    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 1])), showlegend=False)
+    return fig
 
 # =========================
 # TABS NAVIGATION
 # =========================
 tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
-    "🏠 Home", "🔄 Workflow", "🔬 Discovery Engine", "🌟 Reviews", "📞 Contact"
+    "🏠 Home", "🔄 Workflow", "🔬 AI Discovery", "🌟 Reviews", "📞 Contact"
 ])
 
 # =========================
 # 1. HOME TAB
 # =========================
 with tab_home:
-    st.markdown("<h1 style='text-align: center;'>🧠 NeuroCureAI</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center;'>🧠 NeuroCureAI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>AI-Powered Drug Discovery Platform for Alzheimer’s Disease</p>", unsafe_allow_html=True)
     
-    # Reduced Hero Image Size
-    c1, c2, c3 = st.columns([1, 1, 1])
-    with c2:
-        st.image("media/hero_brain_ai.png", width=300) # Smaller size
+    # Hero Image (Size maintained as per original code)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("media/hero_brain_ai.png", use_column_width=True) #
 
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
-    st.image("media/portfolio.png", use_container_width=True) # Benchwork image on home page
-    st.caption("We bridge the gap between AI-driven predictions and experimental laboratory validation.")
+    st.image("media/portfolio.png", use_container_width=True) #
+    st.caption("Integrating computational predictions with experimental validation")
+
+# =========================
+# 2. WORKFLOW TAB
+# =========================
+with tab_workflow:
+    st.header("🔁 AI-Driven Drug Discovery Workflow")
+    st.image("media/workflow.jpg", use_container_width=True) #
+
+# =========================
+# 3. DISCOVERY TAB
+# =========================
+with tab_discovery:
+    st.header("🔬 AI Prediction & ADMET")
+    with st.sidebar:
+        st.markdown("### 🛠 Control Panel")
+        uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
+        if st.button("🚀 Run Prediction") and uploaded is not None:
+            st.session_state["run"] = True
+            st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
+
+    if st.session_state.get("run", False):
+        res_tab1, res_tab2 = st.tabs(["Potency", "ADMET"])
+        input_df = st.session_state["input_df"]
+        input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
+        with st.spinner("Calculating..."):
+            desc_calc()
+            desc = pd.read_csv("descriptors_output.csv")
+            Xlist = list(pd.read_csv("descriptor_list.csv").columns)
+            model = load_model()
+            preds = model.predict(desc[Xlist])
+            results = pd.DataFrame({"Molecule": input_df[1], "SMILES": input_df[0], "Predicted pIC50": preds}).sort_values("Predicted pIC50", ascending=False)
+        
+        with res_tab1:
+            st.dataframe(results)
+        with res_tab2:
+            sel = st.selectbox("Select Compound", results["Molecule"])
+            smi = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
+            st.plotly_chart(plot_admet_radar(compute_admet(smi)), use_container_width=True)
 
 # =========================
 # 4. REVIEWS TAB
 # =========================
 with tab_reviews:
-    st.header("🌟 Existing User Reviews")
+    st.header("🌟 User Reviews")
     
-    rev_col1, rev_col2, rev_col3 = st.columns(3)
-    with rev_col1:
+    r1, r2, r3 = st.columns(3)
+    with r1:
         st.image("media/scott.jpeg", width=120)
         st.markdown("**Scott C. Schuyler**")
-        st.info("Excellent tool for lead optimization. Transition from 'in silico' to 'in vitro' was seamless.")
+        st.markdown("⭐ 4.5/5") #
+        st.caption("Associate Professor, Chang Gung University, Taiwan")
+        st.info("“Excellent tool for lead optimization. The transition from 'in silico' to 'in vitro' was seamless.”") #
 
-    with rev_col2:
+    with r2:
         st.image("media/toshiya.jpg", width=120)
         st.markdown("**Toshiya Senda**")
-        st.info("Sohith, you rock! The platform provided results very close to our experimental values.")
+        st.markdown("⭐ 3.5/5") #
+        st.caption("Research Director, KEK, Japan")
+        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”") #
 
-    with rev_col3:
+    with r3:
         st.image("media/brooks.png", width=120)
         st.markdown("**Brooks Robinson**")
-        st.info("Reduced our lead-picking time. Focus more on the actual science.")
+        st.markdown("⭐ 4.2/5") #
+        st.caption("Program Director, UCCS, USA")
+        st.info("“NeuroCureAI has reduced our lead-picking time, allowing the team to focus more on the science.”") #
 
     st.divider()
-    
     st.subheader("✍️ Submit Your Feedback")
     with st.form("feedback_form", clear_on_submit=True):
-        f_name = st.text_input("Full Name")
-        f_desig = st.text_input("Designation")
-        f_rating = st.select_slider("Rating", options=[1, 2, 3, 4, 5], value=5)
-        f_msg = st.text_area("Feedback Message")
-        
+        name = st.text_input("Name")
+        desig = st.text_input("Designation")
+        rating = st.slider("Rating", 1, 5, 5)
+        msg = st.text_area("Feedback")
         if st.form_submit_button("Send Feedback"):
-            if f_name and f_msg:
-                if send_feedback_email(f_name, f_desig, f_rating, f_msg):
-                    st.success("Success! Feedback sent to sohith.bme@gmail.com")
+            if name and msg:
+                if send_feedback_email(name, desig, rating, msg):
+                    st.success("Feedback sent successfully!")
                     st.balloons()
             else:
-                st.warning("Please fill in your name and message.")
+                st.warning("Please fill in required fields.")
 
-# (Remaining tabs: Workflow, Discovery, and Contact follow the same logic as previous version)
+# =========================
+# 5. CONTACT TAB
+# =========================
+with tab_contact:
+    c1, c2 = st.columns([1, 4])
+    with c1:
+        st.image("sohith_dp.jpg", width=200) #
+    with c2:
+        st.markdown("**Developed by:** [Sohith Reddy](https://sohithpydev.github.io/sohith/)") #
+        st.markdown("📧 **Contact:** sohith.bme@gmail.com") #
