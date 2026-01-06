@@ -5,6 +5,7 @@ import pickle
 import bz2
 import base64
 import smtplib
+import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import plotly.graph_objects as go
@@ -74,7 +75,6 @@ def load_lottieurl(url: str):
     except:
         return None
 
-# Stable Lottie Link: Modern Scientist Runner
 lottie_running = load_lottieurl("https://lottie.host/808605c1-e705-407b-a010-062829b3c582/A0O9MclLAn.json")
 
 # ==========================================
@@ -100,6 +100,7 @@ def send_feedback_email(name, designation, rating, feedback):
     except: return False
 
 def desc_calc():
+    # Setup descriptors
     fp = {
         'AtomPairs2D': 'AtomPairs2DFingerprinter.xml', 'CDK': 'Fingerprinter.xml',
         'CDKextended': 'ExtendedFingerprinter.xml', 'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
@@ -107,18 +108,36 @@ def desc_calc():
         'MACCS': 'MACCSFingerprinter.xml', 'PubChem': 'PubchemFingerprinter.xml',
         'Substructure': 'SubstructureFingerprinter.xml'
     }
-    common_params = dict(mol_dir='molecule.smi', detectaromaticity=True, standardizenitro=True,
-                        standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
+    
+    # Path safety: Ensure we use the absolute path for the generated file
+    selection = os.path.abspath('molecule.smi')
+    
+    common_params = dict(
+        mol_dir=selection, 
+        detectaromaticity=True, 
+        standardizenitro=True,
+        standardizetautomers=True, 
+        threads=2, 
+        removesalt=True, 
+        log=False, 
+        fingerprints=True
+    )
+
     for name, xml in fp.items():
         padeldescriptor(d_file=f"{name}.csv", descriptortypes=f"./PaDEL-Descriptor/{xml}", **common_params)
+    
     def load_fp_clean(path):
         df = pd.read_csv(path)
         return df.drop_duplicates("Name").set_index("Name")
+    
     fps = [f"{name}.csv" for name in fp.keys()]
     X = pd.concat([load_fp_clean(f) for f in fps], axis=1)
     X.reset_index().to_csv("descriptors_output.csv", index=False)
-    for f in fps: os.remove(f)
-    os.remove("molecule.smi")
+    
+    # Cleanup
+    for f in fps: 
+        if os.path.exists(f): os.remove(f)
+    if os.path.exists('molecule.smi'): os.remove('molecule.smi')
 
 def load_model():
     with bz2.BZ2File("alzheimers_model.pbz2", "rb") as f:
@@ -172,7 +191,6 @@ with tab_discovery:
         st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
 
     if st.session_state.get("run", False):
-        # ANIMATED RUNNER SECTION
         anim_placeholder = st.empty()
         with anim_placeholder.container():
             st.markdown("### 🧬 Algorithm Processing...")
@@ -180,6 +198,11 @@ with tab_discovery:
                 st_lottie(lottie_running, height=300, key="runner")
             else:
                 st.spinner("Processing chemical data...")
+            
+            # Save file correctly before calling desc_calc
+            input_df = st.session_state["input_df"]
+            input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
+            time.sleep(1) # Ensure OS has finished writing the file
             
             st.info("Calculating comprehensive molecular fingerprints and descriptors...")
             desc_calc()
@@ -190,34 +213,32 @@ with tab_discovery:
         # DATA TRANSPARENCY & RESULTS
         res_tab1, res_tab2, res_tab3 = st.tabs(["🧬 Data Transparency", "🏆 Predicted Activity", "🩸 ADMET Profile"])
         
-        desc = pd.read_csv("descriptors_output.csv")
-        Xlist = list(pd.read_csv("descriptor_list.csv").columns)
-        
-        with res_tab1:
-            st.subheader("1. Comprehensive Descriptor Matrix")
-            st.write("Full calculation of 2D and fingerprint features:")
-            st.dataframe(desc.head(10), use_container_width=True)
+        if os.path.exists("descriptors_output.csv"):
+            desc = pd.read_csv("descriptors_output.csv")
+            Xlist = list(pd.read_csv("descriptor_list.csv").columns)
             
-            st.subheader("2. Model-Specific Subset (Xlist)")
-            st.write("Features prioritized by the AI model for pIC50 prediction:")
-            st.dataframe(desc[Xlist].head(10), use_container_width=True)
+            with res_tab1:
+                st.subheader("1. Comprehensive Descriptor Matrix")
+                st.dataframe(desc.head(10), use_container_width=True)
+                st.subheader("2. Model-Specific Subset (Xlist)")
+                st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
-        with res_tab2:
-            model = load_model()
-            preds = model.predict(desc[Xlist])
-            results = pd.DataFrame({
-                "Molecule": st.session_state["input_df"][1], 
-                "SMILES": st.session_state["input_df"][0], 
-                "Predicted pIC50": preds
-            }).sort_values("Predicted pIC50", ascending=False)
-            st.subheader("Lead Compound Ranking")
-            st.dataframe(results, use_container_width=True)
+            with res_tab2:
+                model = load_model()
+                preds = model.predict(desc[Xlist])
+                results = pd.DataFrame({
+                    "Molecule": st.session_state["input_df"][1], 
+                    "SMILES": st.session_state["input_df"][0], 
+                    "Predicted pIC50": preds
+                }).sort_values("Predicted pIC50", ascending=False)
+                st.subheader("Lead Compound Ranking")
+                st.dataframe(results, use_container_width=True)
 
-        with res_tab3:
-            st.subheader("Pharmacokinetic Screening")
-            sel = st.selectbox("Select molecule", results["Molecule"])
-            smi_sel = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
-            st.plotly_chart(plot_admet_radar(compute_admet(smi_sel)), use_container_width=True)
+            with res_tab3:
+                st.subheader("Pharmacokinetic Screening")
+                sel = st.selectbox("Select molecule", results["Molecule"])
+                smi_sel = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
+                st.plotly_chart(plot_admet_radar(compute_admet(smi_sel)), use_container_width=True)
 
 # 4. TESTIMONIALS
 with tab_reviews:
