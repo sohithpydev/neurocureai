@@ -29,7 +29,7 @@ st.set_page_config(
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
     receiver_email = "sohith.bme@gmail.com"
-    # REPLACE THIS with your 16-character Google App Password
+    # Authenticated with your provided App Password
     password = "nlso orfq xnaa dzbd" 
 
     msg = MIMEMultipart()
@@ -87,66 +87,77 @@ def plot_admet_radar(d):
 # TABS NAVIGATION
 # =========================
 tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
-    "🏠 Home", "🔄 Workflow", "🔬 AI Discovery", "🌟 Reviews", "📞 Contact"
+    "🏠 Dashboard", "🔄 Pipeline", "🔬 Discovery Engine", "🌟 Testimonials", "📞 Inquiry"
 ])
 
 # =========================
-# 1. HOME TAB
+# 1. DASHBOARD (HOME)
 # =========================
 with tab_home:
     st.markdown("<h1 style='text-align:center;'>🧠 NeuroCureAI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;'>AI-Powered Drug Discovery Platform for Alzheimer’s Disease</p>", unsafe_allow_html=True)
     
-    # Hero Image (Size maintained as per original code)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("media/hero_brain_ai.png", use_column_width=True) #
+        st.image("media/hero_brain_ai.png", use_column_width=True)
 
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
-    st.image("media/portfolio.png", use_container_width=True) #
+    st.image("media/portfolio.png", use_container_width=True)
     st.caption("Integrating computational predictions with experimental validation")
 
 # =========================
-# 2. WORKFLOW TAB
+# 2. PIPELINE (WORKFLOW)
 # =========================
 with tab_workflow:
     st.header("🔁 AI-Driven Drug Discovery Workflow")
-    st.image("media/workflow.jpg", use_container_width=True) #
+    st.image("media/workflow.jpg", use_container_width=True)
 
 # =========================
-# 3. DISCOVERY TAB
+# 3. DISCOVERY ENGINE
 # =========================
 with tab_discovery:
-    st.header("🔬 AI Prediction & ADMET")
-    with st.sidebar:
-        st.markdown("### 🛠 Control Panel")
+    st.header("🔬 Activity Prediction & ADMET Profiling")
+    
+    # Control section moved from sidebar to main page area
+    st.markdown("### 🛠️ Control Panel")
+    with st.container(border=True):
         uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
-        if st.button("🚀 Run Prediction") and uploaded is not None:
-            st.session_state["run"] = True
-            st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
+        run_btn = st.button("🚀 Run Prediction Analysis")
+
+    if run_btn and uploaded is not None:
+        st.session_state["run"] = True
+        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
 
     if st.session_state.get("run", False):
-        res_tab1, res_tab2 = st.tabs(["Potency", "ADMET"])
+        res_tab1, res_tab2 = st.tabs(["Potency Analysis", "ADMET Screening"])
         input_df = st.session_state["input_df"]
         input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
-        with st.spinner("Calculating..."):
+        
+        with st.spinner("Calculating molecular descriptors..."):
             desc_calc()
             desc = pd.read_csv("descriptors_output.csv")
             Xlist = list(pd.read_csv("descriptor_list.csv").columns)
             model = load_model()
             preds = model.predict(desc[Xlist])
-            results = pd.DataFrame({"Molecule": input_df[1], "SMILES": input_df[0], "Predicted pIC50": preds}).sort_values("Predicted pIC50", ascending=False)
+            results = pd.DataFrame({
+                "Molecule": input_df[1], 
+                "SMILES": input_df[0], 
+                "Predicted pIC50": preds
+            }).sort_values("Predicted pIC50", ascending=False)
         
         with res_tab1:
-            st.dataframe(results)
+            st.subheader("Predicted Bioactivity (pIC50)")
+            st.dataframe(results, use_container_width=True)
+            
         with res_tab2:
-            sel = st.selectbox("Select Compound", results["Molecule"])
+            st.subheader("Pharmacokinetic Profiling")
+            sel = st.selectbox("Select Compound for Radar Analysis", results["Molecule"])
             smi = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
             st.plotly_chart(plot_admet_radar(compute_admet(smi)), use_container_width=True)
 
 # =========================
-# 4. REVIEWS TAB
+# 4. TESTIMONIALS (REVIEWS)
 # =========================
 with tab_reviews:
     st.header("🌟 User Reviews")
@@ -155,23 +166,23 @@ with tab_reviews:
     with r1:
         st.image("media/scott.jpeg", width=120)
         st.markdown("**Scott C. Schuyler**")
-        st.markdown("⭐ 4.5/5") #
+        st.markdown("⭐ 4.5/5")
         st.caption("Associate Professor, Chang Gung University, Taiwan")
-        st.info("“Excellent tool for lead optimization. The transition from 'in silico' to 'in vitro' was seamless.”") #
+        st.info("“Excellent tool for lead optimization. The transition from 'in silico' to 'in vitro' was seamless.”")
 
     with r2:
         st.image("media/toshiya.jpg", width=120)
         st.markdown("**Toshiya Senda**")
-        st.markdown("⭐ 3.5/5") #
+        st.markdown("⭐ 3.5/5")
         st.caption("Research Director, KEK, Japan")
-        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”") #
+        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
 
     with r3:
         st.image("media/brooks.png", width=120)
         st.markdown("**Brooks Robinson**")
-        st.markdown("⭐ 4.2/5") #
+        st.markdown("⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
-        st.info("“NeuroCureAI has reduced our lead-picking time, allowing the team to focus more on the science.”") #
+        st.info("“NeuroCureAI has reduced our lead-picking time, allowing the team to focus more on the science.”")
 
     st.divider()
     st.subheader("✍️ Submit Your Feedback")
@@ -189,12 +200,21 @@ with tab_reviews:
                 st.warning("Please fill in required fields.")
 
 # =========================
-# 5. CONTACT TAB
+# 5. INQUIRY (CONTACT)
 # =========================
 with tab_contact:
+    st.header("📞 Developer Profile")
     c1, c2 = st.columns([1, 4])
     with c1:
-        st.image("sohith_dp.jpg", width=200) #
+        st.image("sohith_dp.jpg", width=200)
     with c2:
-        st.markdown("**Developed by:** [Sohith Reddy](https://sohithpydev.github.io/sohith/)") #
-        st.markdown("📧 **Contact:** sohith.bme@gmail.com") #
+        st.markdown("### **Sohith Reddy**")
+        st.markdown("""
+        Final year **B.E. Bioinformatics Undergraduate** at **Saveetha School of Engineering (SSE)**.  
+        My research focus lies at the intersection of **Artificial Intelligence** and **Drug Discovery**.
+        
+        **Current Position:** Research Assistant at **Chang Gung University (CGU)**, Taoyuan, Taiwan.
+        """)
+        st.markdown("---")
+        st.markdown("**Portfolio:** [sohithpydev.github.io/sohith/](https://sohithpydev.github.io/sohith/)")
+        st.markdown("📧 **Contact:** sohith.bme@gmail.com")
