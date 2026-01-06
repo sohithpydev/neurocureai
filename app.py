@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Advanced CSS for High-End Design (To impress Manidhar Singh)
+# Advanced CSS for High-End Design
 st.markdown("""
     <style>
     /* Global Background and Typography */
@@ -34,7 +34,7 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* ENLARGING AND SPACING TABS - DESIGN SCHOOL STANDARDS */
+    /* ENLARGING AND SPACING TABS */
     button[data-baseweb="tab"] {
         font-size: 22px !important; 
         font-weight: 600 !important;
@@ -60,7 +60,7 @@ st.markdown("""
         background-color: transparent !important;
     }
 
-    /* Glassmorphism Containers with extra White Space */
+    /* Glassmorphism Containers */
     div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"], .stImage, .stVideo {
         border: none !important;
         background: rgba(255, 255, 255, 0.9) !important;
@@ -187,15 +187,15 @@ with tab_home:
     st.markdown('<h1 class="title-text" style="text-align:center;">NeuroCureAI</h1>', unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; font-size:1.6rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
     
-    # HERO SECTION WITH GIF SUPPORT AND DESCRIPTION
+    # HERO SECTION
     col1, col2, col3 = st.columns([0.5, 3, 0.5])
     with col2:
         col2_1, col2_2 = st.columns([1.2, 1])
         with col2_1:
             if os.path.exists("media/hero_brain_ai.gif"):
-                st.image("media/hero_brain_ai.gif", use_column_width=True) # GIF Autoplay
+                st.image("media/hero_brain_ai.gif", use_container_width=True)
             else:
-                st.image("media/hero_brain_ai.png", use_column_width=True) # Fallback to static
+                st.image("media/hero_brain_ai.png", use_container_width=True)
         
         with col2_2:
             st.markdown("<div style='padding-top: 20px;'></div>", unsafe_allow_html=True)
@@ -203,23 +203,23 @@ with tab_home:
                 <div class='description-box'>
                 <b>NeuroCureAI</b> is a no‑code, web-based AI platform that predicts pIC₅₀ and ADMET‑style properties for small molecules against Alzheimer’s‑relevant targets, 
                 helping wet‑lab teams quickly triage virtual screening hits before costly experiments. Built with a Python/Streamlit–RDKit–scikit‑learn stack, it turns simple 
-                SMILES uploads into ranked candidate lists and interactive visualizations that fit directly into assay planning workflows.
+                SMILES uploads into ranked candidate lists and interactive visualizations.
                 </div>
             """, unsafe_allow_html=True)
             
             with st.expander("Read more.."):
                 st.write("""
                     Using curated Alzheimer’s bioactivity data and target‑specific ML models, NeuroCureAI focuses on core mechanisms such as amyloid and cholinergic pathways to 
-                    provide disease‑relevant potency estimates instead of generic QSAR outputs. The browser interface lets researchers upload compound sets, select a target, and 
-                    obtain predicted pIC₅₀, key physicochemical/ADMET‑like descriptors, radar plots, and downloadable CSV reports within seconds, making AI‑assisted hit‑to‑lead decisions 
-                    accessible to non‑programmers in academic labs, biotech, and CROs.
+                    provide disease‑relevant potency estimates instead of generic QSAR outputs.
                 """)
     
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
     
-    # Bottom section prefers Video/Gif
-    if os.path.exists("media/portfolio_2.gif"):
+    # FIX: Check for portfolio.gif specifically
+    if os.path.exists("media/portfolio.gif"):
+        st.image("media/portfolio.gif", use_container_width=True)
+    elif os.path.exists("media/portfolio_2.gif"):
         st.image("media/portfolio_2.gif", use_container_width=True)
     elif os.path.exists("media/portfolio.mp4"):
         st.video("media/portfolio.mp4", format="video/mp4", start_time=0)
@@ -255,7 +255,7 @@ with tab_discovery:
             input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
             time.sleep(1) 
             
-            st.info("Calculating comprehensive molecular fingerprints...might take upto 1 minute, please wait!")
+            st.info("Calculating comprehensive molecular fingerprints...")
             desc_calc()
             st.success("✅ Computational descriptors generated successfully.")
 
@@ -270,8 +270,6 @@ with tab_discovery:
             with res_tab1:
                 st.subheader("1. Comprehensive Descriptor Matrix")
                 st.dataframe(desc.head(10), use_container_width=True)
-                st.subheader("2. Model-Specific Descriptor Subset")
-                st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
             with res_tab2:
                 model = load_model()
@@ -298,19 +296,19 @@ with tab_reviews:
         st.image("media/scott.jpeg", width=150)
         st.markdown("**Scott C. Schuyler**\n\n⭐ 4.5/5")
         st.caption("Associate Professor, Chang Gung University, Taiwan")
-        st.info("“Excellent tool for lead optimization. Transition from 'in silico' to 'in vitro' was seamless.”")
+        st.info("“Excellent tool for lead optimization.”")
 
     with r2:
         st.image("media/toshiya.jpg", width=150)
         st.markdown("**Toshiya Senda**\n\n⭐ 3.5/5")
         st.caption("Research Director, KEK, Japan")
-        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
+        st.info("“NeuroCureAI has changed the game!”")
 
     with r3:
         st.image("media/brooks_robinson.png", width=150)
         st.markdown("**Brooks Robinson**\n\n⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
-        st.info("“NeuroCureAI has reduced our lead-picking time, allowing focus on the actual science.”")
+        st.info("“Reduced our lead-picking time significantly.”")
 
     st.divider()
     st.subheader("✍️ Submit Your Feedback")
@@ -333,12 +331,7 @@ with tab_contact:
     with c1: st.image("sohith_dp.jpg", width=200)
     with c2:
         st.markdown("### **Sohith Reddy**")
-        st.markdown("""
-        Final year **B.E. Bioinformatics Undergraduate** at **Saveetha School of Engineering (SSE)**.  
-        Research specialization at the intersection of **Artificial Intelligence** and **Neurodegenerative Lead Discovery**.
-        
-        **Current Designation:** Research Assistant at **Chang Gung University (CGU)**, Taoyuan, Taiwan.
-        """)
+        st.markdown("Final year **B.E. Bioinformatics Undergraduate** at **Saveetha School of Engineering (SSE)**.")
         st.markdown("---")
         st.markdown("**Portfolio:** [sohithpydev.github.io/sohith/](https://sohithpydev.github.io/sohith/)")
         st.markdown("📧 **Direct Contact:** sohith.bme@gmail.com")
