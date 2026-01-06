@@ -24,16 +24,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS to move from "Entry Level" to "Design School" standards
+# Advanced CSS for Design School Standards
 st.markdown("""
     <style>
-    /* Global Background and Typography */
     .main {
         background-color: #fcfcfc;
-        font-family: 'Inter', 'Helvetica Neue', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
     
-    /* Glassmorphism Card Style */
+    /* Glassmorphism Effect */
     div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"] {
         border: none !important;
         background: rgba(255, 255, 255, 0.8) !important;
@@ -41,19 +40,7 @@ st.markdown("""
         border-radius: 24px !important;
         box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.05) !important;
         padding: 25px;
-        margin-bottom: 20px;
-    }
-
-    /* Modern Tab Styling */
-    button[data-baseweb="tab"] {
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        color: #555 !important;
-        transition: all 0.3s ease;
-    }
-    button[data-baseweb="tab"]:hover {
-        color: #2a5298 !important;
-        transform: translateY(-2px);
+        margin-bottom: 25px;
     }
 
     /* Professional Gradient Title */
@@ -66,32 +53,37 @@ st.markdown("""
         letter-spacing: -1.5px;
     }
 
-    /* Image Styling */
-    img {
-        border-radius: 18px;
-        transition: transform 0.4s ease;
-    }
-    img:hover {
-        transform: scale(1.02);
+    /* Tab Aesthetics */
+    button[data-baseweb="tab"] {
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        color: #555 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# UTILITIES & ASSET LOADERS
+# ASSET LOADERS & SAFETY CHECKS
 # ==========================================
 def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200: return None
-    return r.json()
+    try:
+        r = requests.get(url, timeout=5)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except:
+        return None
 
-# Animation for processing
-lottie_running = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_96bov8.json")
+# Stable Lottie Link: Modern Scientist Runner
+lottie_running = load_lottieurl("https://lottie.host/808605c1-e705-407b-a010-062829b3c582/A0O9MclLAn.json")
 
+# ==========================================
+# CORE BACKEND LOGIC
+# ==========================================
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
     receiver_email = "sohith.bme@gmail.com"
-    password = "nlso orfq xnaa dzbd" #
+    password = "nlso orfq xnaa dzbd" 
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
@@ -107,9 +99,6 @@ def send_feedback_email(name, designation, rating, feedback):
         return True
     except: return False
 
-# ==========================================
-# CHEMISTRY & ML ENGINE
-# ==========================================
 def desc_calc():
     fp = {
         'AtomPairs2D': 'AtomPairs2DFingerprinter.xml', 'CDK': 'Fingerprinter.xml',
@@ -117,7 +106,7 @@ def desc_calc():
         'EState': 'EStateFingerprinter.xml', 'KlekotaRoth': 'KlekotaRothFingerprinter.xml',
         'MACCS': 'MACCSFingerprinter.xml', 'PubChem': 'PubchemFingerprinter.xml',
         'Substructure': 'SubstructureFingerprinter.xml'
-    } #
+    }
     common_params = dict(mol_dir='molecule.smi', detectaromaticity=True, standardizenitro=True,
                         standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
     for name, xml in fp.items():
@@ -126,7 +115,7 @@ def desc_calc():
         df = pd.read_csv(path)
         return df.drop_duplicates("Name").set_index("Name")
     fps = [f"{name}.csv" for name in fp.keys()]
-    X = pd.concat([load_fp_clean(f) for f in fps], axis=1) #
+    X = pd.concat([load_fp_clean(f) for f in fps], axis=1)
     X.reset_index().to_csv("descriptors_output.csv", index=False)
     for f in fps: os.remove(f)
     os.remove("molecule.smi")
@@ -139,9 +128,9 @@ def compute_admet(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None: return None
     return {
-        "Lipinski": int(Descriptors.MolWt(mol) <= 500 and Descriptors.MolLogP(mol) <= 5), #
-        "Veber": int(Descriptors.TPSA(mol) <= 140 and Descriptors.NumRotatableBonds(mol) <= 10), #
-        "BBB Likely": int(Descriptors.TPSA(mol) < 90 and Descriptors.MolLogP(mol) >= 2) #
+        "Lipinski": int(Descriptors.MolWt(mol) <= 500 and Descriptors.MolLogP(mol) <= 5),
+        "Veber": int(Descriptors.TPSA(mol) <= 140 and Descriptors.NumRotatableBonds(mol) <= 10),
+        "BBB Likely": int(Descriptors.TPSA(mol) < 90 and Descriptors.MolLogP(mol) >= 2)
     }
 
 def plot_admet_radar(d):
@@ -150,7 +139,7 @@ def plot_admet_radar(d):
     return fig
 
 # ==========================================
-# MAIN NAVIGATION (Professional Names)
+# MAIN APP INTERFACE
 # ==========================================
 tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
     "🏠 Dashboard", "🔄 Pipeline", "🔬 Discovery Engine", "🌟 Testimonials", "📞 Inquiry"
@@ -161,57 +150,61 @@ with tab_home:
     st.markdown('<h1 class="title-text" style="text-align:center;">NeuroCureAI</h1>', unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; font-size:1.3rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])
-    with col2: st.image("media/hero_brain_ai.png", use_column_width=True) #
+    with col2: st.image("media/hero_brain_ai.png", use_column_width=True)
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
-    st.image("media/portfolio.png", use_container_width=True) #
+    st.image("media/portfolio.png", use_container_width=True)
 
 # 2. PIPELINE
 with tab_workflow:
     st.header("🔁 Research Methodology")
-    st.image("media/workflow.jpg", use_container_width=True) #
+    st.image("media/workflow.jpg", use_container_width=True)
 
-# 3. DISCOVERY ENGINE (With Animated Runner)
+# 3. DISCOVERY ENGINE
 with tab_discovery:
     st.header("🔬 AI-Driven Molecular Discovery")
     with st.container():
-        uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"]) #
+        uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
         run_btn = st.button("🚀 Execute Discovery Algorithm")
 
     if run_btn and uploaded is not None:
         st.session_state["run"] = True
-        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None) #
+        st.session_state["input_df"] = pd.read_table(uploaded, sep=" ", header=None)
 
     if st.session_state.get("run", False):
-        # ANIMATED RUNNER OVERLAY
+        # ANIMATED RUNNER SECTION
         anim_placeholder = st.empty()
         with anim_placeholder.container():
             st.markdown("### 🧬 Algorithm Processing...")
-            st_lottie(lottie_running, height=300, key="runner")
+            if lottie_running:
+                st_lottie(lottie_running, height=300, key="runner")
+            else:
+                st.spinner("Processing chemical data...")
+            
             st.info("Calculating comprehensive molecular fingerprints and descriptors...")
-            desc_calc() #
+            desc_calc()
             st.success("✅ Computational descriptors generated successfully.")
 
-        anim_placeholder.empty() # Remove animation
+        anim_placeholder.empty() 
         
-        # SHOWCASE DATA TRANSPARENCY
+        # DATA TRANSPARENCY & RESULTS
         res_tab1, res_tab2, res_tab3 = st.tabs(["🧬 Data Transparency", "🏆 Predicted Activity", "🩸 ADMET Profile"])
         
-        desc = pd.read_csv("descriptors_output.csv") #
-        Xlist = list(pd.read_csv("descriptor_list.csv").columns) #
+        desc = pd.read_csv("descriptors_output.csv")
+        Xlist = list(pd.read_csv("descriptor_list.csv").columns)
         
         with res_tab1:
-            st.subheader("Raw Molecular Descriptors")
-            st.write("A comprehensive matrix of all calculated chemical features:")
+            st.subheader("1. Comprehensive Descriptor Matrix")
+            st.write("Full calculation of 2D and fingerprint features:")
             st.dataframe(desc.head(10), use_container_width=True)
             
-            st.subheader("Refined Model Features (Xlist Subset)")
-            st.write("Specific features prioritized by the Random Forest model for prediction accuracy:")
+            st.subheader("2. Model-Specific Subset (Xlist)")
+            st.write("Features prioritized by the AI model for pIC50 prediction:")
             st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
         with res_tab2:
-            model = load_model() #
-            preds = model.predict(desc[Xlist]) #
+            model = load_model()
+            preds = model.predict(desc[Xlist])
             results = pd.DataFrame({
                 "Molecule": st.session_state["input_df"][1], 
                 "SMILES": st.session_state["input_df"][0], 
@@ -221,32 +214,32 @@ with tab_discovery:
             st.dataframe(results, use_container_width=True)
 
         with res_tab3:
-            st.subheader("Drug-Likeness & BBB Likelihood")
-            sel = st.selectbox("Select molecule for pharmacokinetic analysis", results["Molecule"])
+            st.subheader("Pharmacokinetic Screening")
+            sel = st.selectbox("Select molecule", results["Molecule"])
             smi_sel = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
             st.plotly_chart(plot_admet_radar(compute_admet(smi_sel)), use_container_width=True)
 
-# 4. TESTIMONIALS (With Uniform Styling)
+# 4. TESTIMONIALS
 with tab_reviews:
     st.header("🌟 Global Testimonials")
     r1, r2, r3 = st.columns(3)
     with r1:
-        st.image("media/scott.jpeg", width=150) #
+        st.image("media/scott.jpeg", width=150)
         st.markdown("**Scott C. Schuyler**\n\n⭐ 4.5/5")
         st.caption("Associate Professor, Chang Gung University, Taiwan")
-        st.info("“Excellent tool for lead optimization. Transition from 'in silico' to 'in vitro' was seamless.”") #
+        st.info("“Excellent tool for lead optimization. Transition from 'in silico' to 'in vitro' was seamless.”")
 
     with r2:
-        st.image("media/toshiya.jpg", width=150) #
+        st.image("media/toshiya.jpg", width=150)
         st.markdown("**Toshiya Senda**\n\n⭐ 3.5/5")
         st.caption("Research Director, KEK, Japan")
-        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”") #
+        st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
 
     with r3:
-        st.image("media/brooks_robinson.png", width=150) #
+        st.image("media/brooks_robinson.png", width=150)
         st.markdown("**Brooks Robinson**\n\n⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
-        st.info("“NeuroCureAI has reduced our lead-picking time, allowing focus on the actual science.”") #
+        st.info("“NeuroCureAI has reduced our lead-picking time, allowing focus on the actual science.”")
 
     st.divider()
     st.subheader("✍️ Submit Your Feedback")
@@ -266,7 +259,7 @@ with tab_reviews:
 with tab_contact:
     st.header("📞 Academic Profile")
     c1, c2 = st.columns([1, 4])
-    with c1: st.image("sohith_dp.jpg", width=200) #
+    with c1: st.image("sohith_dp.jpg", width=200)
     with c2:
         st.markdown("### **Sohith Reddy**")
         st.markdown("""
