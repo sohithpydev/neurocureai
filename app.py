@@ -20,7 +20,7 @@ from rdkit.Chem import Descriptors
 # PAGE CONFIGURATION & PREMIUM DESIGN
 # ==========================================
 st.set_page_config(
-    page_title="NeuroCureAI | Precision Drug Discovery",
+    page_title="NeuroCureAI | AI Drug Discovery",
     page_icon="🧠",
     layout="wide"
 )
