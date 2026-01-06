@@ -29,7 +29,6 @@ st.set_page_config(
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
     receiver_email = "sohith.bme@gmail.com"
-    # Authenticated with your provided App Password
     password = "nlso orfq xnaa dzbd" 
 
     msg = MIMEMultipart()
@@ -52,17 +51,52 @@ def send_feedback_email(name, designation, rating, feedback):
         return False
 
 # =========================
-# CHEMISTRY & ML LOGIC
+# RESTORED CHEMISTRY LOGIC (Fixes KeyError)
 # =========================
 def desc_calc():
-    fp = {'PubChem': 'PubchemFingerprinter.xml'}
-    common_params = dict(mol_dir='molecule.smi', detectaromaticity=True, standardizenitro=True,
-                        standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
+    # Original logic containing all 9 XML types required by your model
+    fp = {
+        'AtomPairs2D': 'AtomPairs2DFingerprinter.xml',
+        'CDK': 'Fingerprinter.xml',
+        'CDKextended': 'ExtendedFingerprinter.xml',
+        'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
+        'EState': 'EStateFingerprinter.xml',
+        'KlekotaRoth': 'KlekotaRothFingerprinter.xml',
+        'MACCS': 'MACCSFingerprinter.xml',
+        'PubChem': 'PubchemFingerprinter.xml',
+        'Substructure': 'SubstructureFingerprinter.xml'
+    }
+
+    common_params = dict(
+        mol_dir='molecule.smi',
+        detectaromaticity=True,
+        standardizenitro=True,
+        standardizetautomers=True,
+        threads=2,
+        removesalt=True,
+        log=False,
+        fingerprints=True
+    )
+
     for name, xml in fp.items():
-        padeldescriptor(d_file=f"{name}.csv", descriptortypes=f"./PaDEL-Descriptor/{xml}", **common_params)
-    df = pd.read_csv("PubChem.csv").drop_duplicates("Name").set_index("Name")
-    df.reset_index().to_csv("descriptors_output.csv", index=False)
-    os.remove("PubChem.csv")
+        padeldescriptor(
+            d_file=f"{name}.csv",
+            descriptortypes=f"./PaDEL-Descriptor/{xml}",
+            **common_params
+        )
+
+    def load_fp_clean(path):
+        df = pd.read_csv(path)
+        return df.drop_duplicates("Name").set_index("Name")
+
+    fps = [f"{name}.csv" for name in fp.keys()]
+    
+    # Concatenating all descriptors to match Xlist requirements
+    X = pd.concat([load_fp_clean(f) for f in fps], axis=1)
+    X.reset_index().to_csv("descriptors_output.csv", index=False)
+
+    for f in fps:
+        os.remove(f)
     os.remove("molecule.smi")
 
 def load_model():
@@ -91,7 +125,7 @@ tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
 ])
 
 # =========================
-# 1. DASHBOARD (HOME)
+# 1. DASHBOARD
 # =========================
 with tab_home:
     st.markdown("<h1 style='text-align:center;'>🧠 NeuroCureAI</h1>", unsafe_allow_html=True)
@@ -107,7 +141,7 @@ with tab_home:
     st.caption("Integrating computational predictions with experimental validation")
 
 # =========================
-# 2. PIPELINE (WORKFLOW)
+# 2. PIPELINE
 # =========================
 with tab_workflow:
     st.header("🔁 AI-Driven Drug Discovery Workflow")
@@ -119,7 +153,6 @@ with tab_workflow:
 with tab_discovery:
     st.header("🔬 Activity Prediction & ADMET Profiling")
     
-    # Control section moved from sidebar to main page area
     st.markdown("### 🛠️ Control Panel")
     with st.container(border=True):
         uploaded = st.file_uploader("Upload molecule file (.txt)", type=["txt"])
@@ -134,17 +167,19 @@ with tab_discovery:
         input_df = st.session_state["input_df"]
         input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
         
-        with st.spinner("Calculating molecular descriptors..."):
+        with st.spinner("🧪 Calculating comprehensive descriptors... This may take a minute."):
             desc_calc()
             desc = pd.read_csv("descriptors_output.csv")
             Xlist = list(pd.read_csv("descriptor_list.csv").columns)
             model = load_model()
             preds = model.predict(desc[Xlist])
+            
             results = pd.DataFrame({
                 "Molecule": input_df[1], 
                 "SMILES": input_df[0], 
                 "Predicted pIC50": preds
             }).sort_values("Predicted pIC50", ascending=False)
+            st.session_state["results"] = results
         
         with res_tab1:
             st.subheader("Predicted Bioactivity (pIC50)")
@@ -152,36 +187,31 @@ with tab_discovery:
             
         with res_tab2:
             st.subheader("Pharmacokinetic Profiling")
-            sel = st.selectbox("Select Compound for Radar Analysis", results["Molecule"])
+            sel = st.selectbox("Select Compound", results["Molecule"])
             smi = results.loc[results["Molecule"] == sel, "SMILES"].values[0]
             st.plotly_chart(plot_admet_radar(compute_admet(smi)), use_container_width=True)
 
 # =========================
-# 4. TESTIMONIALS (REVIEWS)
+# 4. TESTIMONIALS
 # =========================
 with tab_reviews:
     st.header("🌟 User Reviews")
-    
     r1, r2, r3 = st.columns(3)
     with r1:
-        # Set width to 150 for all to match size
-        st.image("media/scott.jpeg", width=150) 
-        st.markdown("**Scott C. Schuyler**")
-        st.markdown("⭐ 4.5/5")
+        st.image("media/scott.jpeg", width=150)
+        st.markdown("**Scott C. Schuyler**\n\n⭐ 4.5/5")
         st.caption("Associate Professor, Chang Gung University, Taiwan")
-        st.info("“Excellent tool for lead optimization. The transition from 'in silico' to 'in vitro' was seamless.”")
+        st.info("“Excellent tool for lead optimization. Transition from 'in silico' to 'in vitro' was seamless.”")
 
     with r2:
-        st.image("media/toshiya.jpg", width=150) 
-        st.markdown("**Toshiya Senda**")
-        st.markdown("⭐ 3.5/5")
+        st.image("media/toshiya.jpg", width=150)
+        st.markdown("**Toshiya Senda**\n\n⭐ 3.5/5")
         st.caption("Research Director, KEK, Japan")
         st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
 
     with r3:
-        st.image("media/brooks_robinson.png", width=150) 
-        st.markdown("**Brooks Robinson**")
-        st.markdown("⭐ 4.2/5")
+        st.image("media/brooks_robinson.png", width=150)
+        st.markdown("**Brooks Robinson**\n\n⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
         st.info("“NeuroCureAI has reduced our lead-picking time, allowing the team to focus more on the science.”")
 
