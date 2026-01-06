@@ -6,3 +6,4 @@ padelpy==0.1.14
 rdkit-pypi
 plotly
 pillow
+streamlit-lottie
