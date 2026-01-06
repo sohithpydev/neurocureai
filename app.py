@@ -179,7 +179,7 @@ with tab_reviews:
         st.info("“NeuroCureAI has changed the game for our lead discovery. Sohith, you rock!”")
 
     with r3:
-        st.image("media/brooks.png", width=150) 
+        st.image("media/brooks_robinson.png", width=150) 
         st.markdown("**Brooks Robinson**")
         st.markdown("⭐ 4.2/5")
         st.caption("Program Director, UCCS, USA")
