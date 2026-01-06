@@ -25,23 +25,48 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for "Design School" standards (Glassmorphism & Gradients)
+# Advanced CSS for High-End Design (To impress Manidhar)
 st.markdown("""
     <style>
+    /* Global Background and Typography */
     .main {
         background-color: #fcfcfc;
         font-family: 'Inter', sans-serif;
     }
     
+    /* ENLARGING AND SPACING TABS */
+    button[data-baseweb="tab"] {
+        font-size: 22px !important; /* Larger font */
+        font-weight: 600 !important;
+        color: #555 !important;
+        padding-left: 40px !important; /* Better horizontal space */
+        padding-right: 40px !important;
+        margin-right: 15px !important; /* Gap between tabs */
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent !important;
+    }
+
+    /* Tab Hover & Active States */
+    button[data-baseweb="tab"]:hover {
+        color: #2a5298 !important;
+        background-color: #f0f4f8 !important;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #1e3c72 !important;
+        border-bottom: 3px solid #1e3c72 !important;
+    }
+
     /* Glassmorphism Effect for Containers */
-    div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"] {
+    div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"], .stVideo {
         border: none !important;
         background: rgba(255, 255, 255, 0.8) !important;
         backdrop-filter: blur(12px);
         border-radius: 24px !important;
         box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.05) !important;
-        padding: 25px;
-        margin-bottom: 25px;
+        padding: 30px !important; /* More breathing room inside cards */
+        margin-bottom: 30px !important;
     }
 
     /* Professional Gradient Title */
@@ -50,20 +75,8 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
-        font-size: 3.8rem;
+        font-size: 4rem;
         letter-spacing: -1.5px;
-    }
-
-    /* Tab Hover Effects */
-    button[data-baseweb="tab"] {
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        color: #555 !important;
-        transition: all 0.3s ease;
-    }
-    button[data-baseweb="tab"]:hover {
-        color: #2a5298 !important;
-        transform: translateY(-2px);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -78,13 +91,12 @@ def load_lottieurl(url: str):
         return r.json()
     except: return None
 
-# Stable Lottie Link: Scientist Runner
 lottie_running = load_lottieurl("https://lottie.host/808605c1-e705-407b-a010-062829b3c582/A0O9MclLAn.json")
 
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
     receiver_email = "sohith.bme@gmail.com"
-    password = "nlso orfq xnaa dzbd" # Your App Password
+    password = "nlso orfq xnaa dzbd" 
     
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -96,14 +108,13 @@ def send_feedback_email(name, designation, rating, feedback):
     
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.set_debuglevel(0) # Set to 1 if you need to debug logs
         server.starttls()
         server.login(sender_email, password)
         server.send_message(msg)
         server.quit()
         return True
     except Exception as e:
-        st.error(f"Email error: {str(e)}")
+        st.error(f"Email failure. Error: {str(e)}")
         return False
 
 # ==========================================
@@ -117,8 +128,6 @@ def desc_calc():
         'MACCS': 'MACCSFingerprinter.xml', 'PubChem': 'PubchemFingerprinter.xml',
         'Substructure': 'SubstructureFingerprinter.xml'
     }
-    
-    # Path safety for PaDEL
     selection = os.path.abspath('molecule.smi')
     common_params = dict(mol_dir=selection, detectaromaticity=True, standardizenitro=True,
                         standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
@@ -166,19 +175,24 @@ tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
 # 1. DASHBOARD
 with tab_home:
     st.markdown('<h1 class="title-text" style="text-align:center;">NeuroCureAI</h1>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; font-size:1.3rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; font-size:1.5rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2: st.image("media/hero_brain_ai.png", use_column_width=True)
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
-    st.image("media/portfolio.png", use_container_width=True)
+    
+    if os.path.exists("media/portfolio.mp4"):
+        st.video("media/portfolio.mp4", format="video/mp4", start_time=0)
+    else:
+        st.warning("Video file 'media/portfolio.mp4' not found.")
+    st.caption("Integrating computational predictions with experimental validation")
 
 # 2. PIPELINE
 with tab_workflow:
     st.header("🔁 Research Methodology")
     st.image("media/workflow.jpg", use_container_width=True)
 
-# 3. DISCOVERY ENGINE (With Runner Animation & Data Reveal)
+# 3. DISCOVERY ENGINE
 with tab_discovery:
     st.header("🔬 AI-Driven Molecular Discovery")
     with st.container():
@@ -193,16 +207,12 @@ with tab_discovery:
         anim_placeholder = st.empty()
         with anim_placeholder.container():
             st.markdown("### 🧬 Algorithm Processing...")
-            # Restore Animation
             if lottie_running:
                 st_lottie(lottie_running, height=300, key="runner")
-            else:
-                st.spinner("Processing chemical data...")
             
-            # File sync for PaDEL
             input_df = st.session_state["input_df"]
             input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
-            time.sleep(1) # Ensure file is written
+            time.sleep(1) 
             
             st.info("Calculating comprehensive molecular fingerprints and descriptors...")
             desc_calc()
@@ -218,10 +228,8 @@ with tab_discovery:
             
             with res_tab1:
                 st.subheader("1. Comprehensive Descriptor Matrix")
-                st.write("Visualizing raw chemical feature calculations:")
                 st.dataframe(desc.head(10), use_container_width=True)
                 st.subheader("2. Refined Model Features (Xlist Subset)")
-                st.write("Specific fingerprints utilized by the AI model for potency prediction:")
                 st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
             with res_tab2:
