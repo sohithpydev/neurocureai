@@ -201,25 +201,26 @@ with tab_home:
             st.markdown("<div style='padding-top: 20px;'></div>", unsafe_allow_html=True)
             st.markdown("""
                 <div class='description-box'>
-                <b>NeuroCureAI</b> leverages advanced Machine Learning and Molecular Fingerprinting to accelerate the identification of potent therapeutic inhibitors. 
-                Our platform streamlines the journey from raw chemical data to high-confidence lead compounds.
+                <b>NeuroCureAI</b> is a no‑code, web-based AI platform that predicts pIC₅₀ and ADMET‑style properties for small molecules against Alzheimer’s‑relevant targets, 
+                helping wet‑lab teams quickly triage virtual screening hits before costly experiments. Built with a Python/Streamlit–RDKit–scikit‑learn stack, it turns simple 
+                SMILES uploads into ranked candidate lists and interactive visualizations that fit directly into assay planning workflows.
                 </div>
             """, unsafe_allow_html=True)
             
             with st.expander("Read more.."):
                 st.write("""
-                    By integrating PaDEL-Descriptor technology with robust Random Forest regression models, 
-                    NeuroCureAI predicts the pIC50 values of novel molecules with high precision. 
-                    The tool further evaluates pharmacokinetic feasibility through ADMET profiling, ensuring 
-                    that discovered leads are not just active, but drug-ready.
+                    Using curated Alzheimer’s bioactivity data and target‑specific ML models, NeuroCureAI focuses on core mechanisms such as amyloid and cholinergic pathways to 
+                    provide disease‑relevant potency estimates instead of generic QSAR outputs. The browser interface lets researchers upload compound sets, select a target, and 
+                    obtain predicted pIC₅₀, key physicochemical/ADMET‑like descriptors, radar plots, and downloadable CSV reports within seconds, making AI‑assisted hit‑to‑lead decisions 
+                    accessible to non‑programmers in academic labs, biotech, and CROs.
                 """)
     
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
     
     # Bottom section prefers Video/Gif
-    if os.path.exists("media/portfolio.gif"):
-        st.image("media/portfolio.gif", use_container_width=True)
+    if os.path.exists("media/portfolio_2.gif"):
+        st.image("media/portfolio_2.gif", use_container_width=True)
     elif os.path.exists("media/portfolio.mp4"):
         st.video("media/portfolio.mp4", format="video/mp4", start_time=0)
     else:
@@ -269,7 +270,7 @@ with tab_discovery:
             with res_tab1:
                 st.subheader("1. Comprehensive Descriptor Matrix")
                 st.dataframe(desc.head(10), use_container_width=True)
-                st.subheader("2. Model-Specific Subset (Xlist)")
+                st.subheader("2. Model-Specific Descriptor Subset")
                 st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
             with res_tab2:
