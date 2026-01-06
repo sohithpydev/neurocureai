@@ -7,3 +7,4 @@ rdkit-pypi
 plotly
 pillow
 streamlit-lottie
+requests
