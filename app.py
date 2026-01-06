@@ -17,7 +17,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 
 # ==========================================
-# PAGE CONFIGURATION & THEMING
+# PAGE CONFIGURATION & PREMIUM DESIGN
 # ==========================================
 st.set_page_config(
     page_title="NeuroCureAI | Precision Drug Discovery",
@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Advanced CSS for Design School Standards
+# Custom CSS for "Design School" standards (Glassmorphism & Gradients)
 st.markdown("""
     <style>
     .main {
@@ -33,7 +33,7 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* Glassmorphism Effect */
+    /* Glassmorphism Effect for Containers */
     div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"] {
         border: none !important;
         background: rgba(255, 255, 255, 0.8) !important;
@@ -54,53 +54,62 @@ st.markdown("""
         letter-spacing: -1.5px;
     }
 
-    /* Tab Aesthetics */
+    /* Tab Hover Effects */
     button[data-baseweb="tab"] {
         font-size: 18px !important;
         font-weight: 600 !important;
         color: #555 !important;
+        transition: all 0.3s ease;
+    }
+    button[data-baseweb="tab"]:hover {
+        color: #2a5298 !important;
+        transform: translateY(-2px);
     }
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# ASSET LOADERS & SAFETY CHECKS
+# ASSET LOADERS (Lottie & Email)
 # ==========================================
 def load_lottieurl(url: str):
     try:
         r = requests.get(url, timeout=5)
-        if r.status_code != 200:
-            return None
+        if r.status_code != 200: return None
         return r.json()
-    except:
-        return None
+    except: return None
 
+# Stable Lottie Link: Scientist Runner
 lottie_running = load_lottieurl("https://lottie.host/808605c1-e705-407b-a010-062829b3c582/A0O9MclLAn.json")
 
-# ==========================================
-# CORE BACKEND LOGIC
-# ==========================================
 def send_feedback_email(name, designation, rating, feedback):
     sender_email = "sohith.bme@gmail.com" 
     receiver_email = "sohith.bme@gmail.com"
-    password = "nlso orfq xnaa dzbd" 
+    password = "nlso orfq xnaa dzbd" # Your App Password
+    
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
     msg['Subject'] = f"NeuroCureAI Feedback: {rating}/5 Stars from {name}"
-    body = f"New Review Received:\nName: {name}\nDesignation: {designation}\nRating: {rating}/5\nFeedback: {feedback}"
+    
+    body = f"New Review Received:\n\nName: {name}\nDesignation: {designation}\nRating: {rating}/5\n\nFeedback:\n{feedback}"
     msg.attach(MIMEText(body, 'plain'))
+    
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.set_debuglevel(0) # Set to 1 if you need to debug logs
         server.starttls()
         server.login(sender_email, password)
         server.send_message(msg)
         server.quit()
         return True
-    except: return False
+    except Exception as e:
+        st.error(f"Email error: {str(e)}")
+        return False
 
+# ==========================================
+# CORE BACKEND LOGIC
+# ==========================================
 def desc_calc():
-    # Setup descriptors
     fp = {
         'AtomPairs2D': 'AtomPairs2DFingerprinter.xml', 'CDK': 'Fingerprinter.xml',
         'CDKextended': 'ExtendedFingerprinter.xml', 'CDKgraphonly': 'GraphOnlyFingerprinter.xml',
@@ -109,19 +118,10 @@ def desc_calc():
         'Substructure': 'SubstructureFingerprinter.xml'
     }
     
-    # Path safety: Ensure we use the absolute path for the generated file
+    # Path safety for PaDEL
     selection = os.path.abspath('molecule.smi')
-    
-    common_params = dict(
-        mol_dir=selection, 
-        detectaromaticity=True, 
-        standardizenitro=True,
-        standardizetautomers=True, 
-        threads=2, 
-        removesalt=True, 
-        log=False, 
-        fingerprints=True
-    )
+    common_params = dict(mol_dir=selection, detectaromaticity=True, standardizenitro=True,
+                        standardizetautomers=True, threads=2, removesalt=True, log=False, fingerprints=True)
 
     for name, xml in fp.items():
         padeldescriptor(d_file=f"{name}.csv", descriptortypes=f"./PaDEL-Descriptor/{xml}", **common_params)
@@ -134,7 +134,6 @@ def desc_calc():
     X = pd.concat([load_fp_clean(f) for f in fps], axis=1)
     X.reset_index().to_csv("descriptors_output.csv", index=False)
     
-    # Cleanup
     for f in fps: 
         if os.path.exists(f): os.remove(f)
     if os.path.exists('molecule.smi'): os.remove('molecule.smi')
@@ -158,7 +157,7 @@ def plot_admet_radar(d):
     return fig
 
 # ==========================================
-# MAIN APP INTERFACE
+# MAIN NAVIGATION TABS
 # ==========================================
 tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
     "🏠 Dashboard", "🔄 Pipeline", "🔬 Discovery Engine", "🌟 Testimonials", "📞 Inquiry"
@@ -179,7 +178,7 @@ with tab_workflow:
     st.header("🔁 Research Methodology")
     st.image("media/workflow.jpg", use_container_width=True)
 
-# 3. DISCOVERY ENGINE
+# 3. DISCOVERY ENGINE (With Runner Animation & Data Reveal)
 with tab_discovery:
     st.header("🔬 AI-Driven Molecular Discovery")
     with st.container():
@@ -194,15 +193,16 @@ with tab_discovery:
         anim_placeholder = st.empty()
         with anim_placeholder.container():
             st.markdown("### 🧬 Algorithm Processing...")
+            # Restore Animation
             if lottie_running:
                 st_lottie(lottie_running, height=300, key="runner")
             else:
                 st.spinner("Processing chemical data...")
             
-            # Save file correctly before calling desc_calc
+            # File sync for PaDEL
             input_df = st.session_state["input_df"]
             input_df.to_csv("molecule.smi", sep="\t", index=False, header=False)
-            time.sleep(1) # Ensure OS has finished writing the file
+            time.sleep(1) # Ensure file is written
             
             st.info("Calculating comprehensive molecular fingerprints and descriptors...")
             desc_calc()
@@ -210,7 +210,6 @@ with tab_discovery:
 
         anim_placeholder.empty() 
         
-        # DATA TRANSPARENCY & RESULTS
         res_tab1, res_tab2, res_tab3 = st.tabs(["🧬 Data Transparency", "🏆 Predicted Activity", "🩸 ADMET Profile"])
         
         if os.path.exists("descriptors_output.csv"):
@@ -219,8 +218,10 @@ with tab_discovery:
             
             with res_tab1:
                 st.subheader("1. Comprehensive Descriptor Matrix")
+                st.write("Visualizing raw chemical feature calculations:")
                 st.dataframe(desc.head(10), use_container_width=True)
-                st.subheader("2. Model-Specific Subset (Xlist)")
+                st.subheader("2. Refined Model Features (Xlist Subset)")
+                st.write("Specific fingerprints utilized by the AI model for potency prediction:")
                 st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
             with res_tab2:
