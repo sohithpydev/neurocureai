@@ -25,7 +25,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Advanced CSS for High-End Design (To impress Manidhar)
+# Advanced CSS for High-End Design (To impress Manidhar Singh)
 st.markdown("""
     <style>
     /* Global Background and Typography */
@@ -34,39 +34,41 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* ENLARGING AND SPACING TABS */
+    /* ENLARGING AND SPACING TABS - DESIGN SCHOOL STANDARDS */
     button[data-baseweb="tab"] {
-        font-size: 22px !important; /* Larger font */
+        font-size: 22px !important; 
         font-weight: 600 !important;
         color: #555 !important;
-        padding-left: 40px !important; /* Better horizontal space */
-        padding-right: 40px !important;
-        margin-right: 15px !important; /* Gap between tabs */
-        transition: all 0.3s ease;
-        border-bottom: 3px solid transparent !important;
+        padding-left: 50px !important; 
+        padding-right: 50px !important;
+        margin-right: 20px !important; 
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-bottom: 4px solid transparent !important;
+        height: 60px !important;
     }
 
     /* Tab Hover & Active States */
     button[data-baseweb="tab"]:hover {
         color: #2a5298 !important;
-        background-color: #f0f4f8 !important;
-        border-radius: 10px 10px 0 0 !important;
+        background-color: #f8f9fa !important;
+        transform: translateY(-2px);
     }
     
     button[data-baseweb="tab"][aria-selected="true"] {
         color: #1e3c72 !important;
-        border-bottom: 3px solid #1e3c72 !important;
+        border-bottom: 4px solid #1e3c72 !important;
+        background-color: transparent !important;
     }
 
-    /* Glassmorphism Effect for Containers */
-    div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"], .stVideo {
+    /* Glassmorphism Containers with extra White Space */
+    div[data-testid="stExpander"], .stContainer, div[data-testid="stForm"], .stImage, .stVideo {
         border: none !important;
-        background: rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(12px);
-        border-radius: 24px !important;
-        box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.05) !important;
-        padding: 30px !important; /* More breathing room inside cards */
-        margin-bottom: 30px !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(15px);
+        border-radius: 30px !important;
+        box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.05) !important;
+        padding: 40px !important; 
+        margin-bottom: 40px !important;
     }
 
     /* Professional Gradient Title */
@@ -75,8 +77,9 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
-        font-size: 4rem;
-        letter-spacing: -1.5px;
+        font-size: 4.2rem;
+        letter-spacing: -2px;
+        margin-bottom: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -175,16 +178,27 @@ tab_home, tab_workflow, tab_discovery, tab_reviews, tab_contact = st.tabs([
 # 1. DASHBOARD
 with tab_home:
     st.markdown('<h1 class="title-text" style="text-align:center;">NeuroCureAI</h1>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; font-size:1.5rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; font-size:1.6rem; color:#666;'>Computational lead discovery for Alzheimer's Research.</p>", unsafe_allow_html=True)
+    
+    # HERO SECTION WITH GIF SUPPORT
     col1, col2, col3 = st.columns([1, 2, 1])
-    with col2: st.image("media/hero_brain_ai.png", use_column_width=True)
+    with col2:
+        if os.path.exists("media/hero_brain_ai.gif"):
+            st.image("media/hero_brain_ai.gif", use_column_width=True) # GIF Autoplay
+        else:
+            st.image("media/hero_brain_ai.png", use_column_width=True) # Fallback to static
+    
     st.markdown("---")
     st.markdown("## 🔗 Bridging AI with Benchwork")
     
-    if os.path.exists("media/portfolio.mp4"):
+    # Bottom section prefers Video/Gif
+    if os.path.exists("media/portfolio.gif"):
+        st.image("media/portfolio.gif", use_container_width=True)
+    elif os.path.exists("media/portfolio.mp4"):
         st.video("media/portfolio.mp4", format="video/mp4", start_time=0)
     else:
-        st.warning("Video file 'media/portfolio.mp4' not found.")
+        st.image("media/portfolio.png", use_container_width=True)
+        
     st.caption("Integrating computational predictions with experimental validation")
 
 # 2. PIPELINE
@@ -229,7 +243,7 @@ with tab_discovery:
             with res_tab1:
                 st.subheader("1. Comprehensive Descriptor Matrix")
                 st.dataframe(desc.head(10), use_container_width=True)
-                st.subheader("2. Refined Model Features (Xlist Subset)")
+                st.subheader("2. Model-Specific Subset (Xlist)")
                 st.dataframe(desc[Xlist].head(10), use_container_width=True)
 
             with res_tab2:
