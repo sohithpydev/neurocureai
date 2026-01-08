@@ -359,3 +359,36 @@ with tab_contact:
         st.markdown("---")
         st.markdown("**Portfolio:** [sohithpydev.github.io/sohith/](https://sohithpydev.github.io/sohith/)")
         st.markdown("📧 **Direct Contact:** sohith.bme@gmail.com")
+
+# ==========================================
+# FOOTER SECTION
+# ==========================================
+st.markdown("""
+    <style>
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        color: #555;
+        text-align: center;
+        padding: 10px;
+        border-top: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        z-index: 1000;
+    }
+    .footer img {
+        height: 30px;
+    }
+    </style>
+    <div class="footer">
+        <span>Powered by</span>
+        <img src="data:image/png;base64,{}" alt="Saveetha Logo">
+    </div>
+""".format(
+    base64.b64encode(open("saveetha_logo.png", "rb").read()).decode() if os.path.exists("saveetha_logo.png") else ""
+), unsafe_allow_html=True)
