@@ -363,32 +363,41 @@ with tab_contact:
 # ==========================================
 # FOOTER SECTION
 # ==========================================
-st.markdown("""
-    <style>
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: white;
-        color: #555;
-        text-align: center;
-        padding: 10px;
-        border-top: 1px solid #eee;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        z-index: 1000;
-    }
-    .footer img {
-        height: 30px;
-    }
-    </style>
-    <div class="footer">
-        <span>Powered by</span>
-        <img src="data:image/png;base64,{}" alt="Saveetha Logo">
-    </div>
-""".format(
-    base64.b64encode(open("saveetha_logo.png", "rb").read()).decode() if os.path.exists("saveetha_logo.png") else ""
-), unsafe_allow_html=True)
+footer_logo_path = "media/saveetha_logo.png" # Path to your logo
+
+if os.path.exists(footer_logo_path):
+    with open(footer_logo_path, "rb") as f:
+        logo_base64 = base64.b64encode(f.read()).decode()
+    
+    st.markdown(f"""
+        <style>
+        .footer {{
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            color: #555;
+            text-align: center;
+            padding: 8px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            z-index: 1000;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+        }}
+        .footer img {{
+            height: 35px;
+            width: auto;
+        }}
+        </style>
+        <div class="footer">
+            <span>Powered by</span>
+            <img src="data:image/png;base64,{logo_base64}">
+        </div>
+    """, unsafe_allow_html=True)
